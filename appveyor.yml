@@ -1,0 +1,44 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+
+configuration:
+  - Debug
+  - Release
+
+environment:
+  keystore-password:
+    secure: DbsLa0YaOQb8BJox0D0crKWqGL3TiiUuSvVzTCTHoFkL8ZdSOwON8khP8tnIZnavFLbDxQyqLKC2PSjUAxbIep/tkUA6H5RTQ8FfYP+dLoBiUxCAONaklBIb8ZBCMRLzDqq2xjJ4T0i57jl8t3eGEQ==
+
+  matrix:
+    # Android
+    - msbuild_cmd: '/t:Restore,PackageForAndroid xnano.Droid\xnano.Droid.csproj'
+    # iOS
+    - msbuild_cmd: '/t:Restore,Build /p:Platform="iPhone" xnano.iOS\xnano.iOS.csproj'
+
+matrix:
+  fast_finish: true
+
+install:
+  - git submodule update --init --recursive
+
+build_script:
+  - msbuild %msbuild_cmd%
+
+artifacts:
+  - path: '**\*.apk'
+    name: apk
+    type: File
+  - path: '**\*.ipa'
+    name: ipa
+    type: File
+
+deploy:
+  - provider: GitHub
+    description: "Mobile binaries"
+    auth_token:
+      secure: qglMtUCbrzIn+36s7qWOPEj0HmJgs99bnzi4K8uYNPoxGW0qmJdOD1lmsa3TzGPn
+    draft: false
+    prerelease: false
+    tag: $(APPVEYOR_REPO_TAG_NAME)
+    on:
+      appveyor_repo_tag: true

@@ -1,0 +1,6 @@
+[submodule "Includes/SmartGlass"]
+	path = Includes/SmartGlass
+	url = https://github.com/OpenXbox/xbox-smartglass-csharp.git
+[submodule "Includes/XboxWebApi"]
+	path = Includes/XboxWebApi
+	url = https://github.com/OpenXbox/xbox-webapi-csharp.git

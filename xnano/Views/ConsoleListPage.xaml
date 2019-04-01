@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage
+	xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="xnano.Views.ConsoleListPage"
+	Title="{Binding Title}">
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Text="Add" Command="{Binding AddConsoleCommand}" />
+        <ToolbarItem Text="Refresh" Command="{Binding RefreshCommand}" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Content>
+		<StackLayout>
+			<ListView x:Name="ConsoleListView"
+				ItemsSource="{Binding Items}"
+				VerticalOptions="FillAndExpand"
+				HasUnevenRows="true"
+				RefreshCommand="{Binding RefreshCommand}"
+				IsPullToRefreshEnabled="true"
+				IsRefreshing="{Binding IsBusy, Mode=OneWay}"
+				CachingStrategy="RecycleElement"
+				SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+				<ListView.ItemTemplate>
+					<DataTemplate>
+						<ViewCell>
+							<StackLayout Orientation="Horizontal" HorizontalOptions="Fill">
+								<StackLayout Orientation="Vertical">
+									<Label Text = "{Binding Name}" FontSize="24"/>
+									<Label Text = "{Binding Address, StringFormat='{0}'}"/>
+								</StackLayout>
+								<!-- Image Source="{Binding Image}" HorizontalOptions="End" AbsoluteLayout.LayoutBounds="250.25, 0.25, 50, 50 "/ -->
+							</StackLayout>
+						</ViewCell>
+					</DataTemplate>
+				</ListView.ItemTemplate>
+			</ListView>
+			<Label Text="{Binding StatusMessage}" />
+		</StackLayout>
+	</ContentPage.Content>
+</ContentPage>

@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [{
+            "label": "Restore dependencies",
+            "type": "shell",
+            "group": "build",
+            "command": "nuget",
+            "args": ["restore"],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build Android App",
+            "type": "shell",
+            "group": "build",
+            "command": "msbuild",
+            "args": [
+                "${workspaceRoot}/Droid/xnano.Droid.csproj",
+                "/t:Restore,PackageForAndroid"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build & Install Android App",
+            "type": "shell",
+            "group": "build",
+            "command": "msbuild",
+            "args": [
+                "${workspaceRoot}/Droid/xnano.Droid.csproj",
+                "/t:Restore,install"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
