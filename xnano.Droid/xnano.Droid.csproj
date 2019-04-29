@@ -70,11 +70,6 @@
     <AndroidResource Include="Resources\drawable\RecordButton.png" />
     <AndroidResource Include="Resources\layout\GamestreamLayout.axml" />
   </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <AndroidAsset Include="Assets\player.html" />
-    <AndroidAsset Include="Assets\player.js" />
-  </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
     <Reference Include="System" />
