@@ -2,12 +2,20 @@
 <ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="xnano.Views.LoadingPage"
+    xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+        prism:ViewModelLocator.AutowireViewModel="True"
+	x:Class="xnano.Views.MainPage"
 	Title="{Binding Title}">
 	<ContentPage.Content>
         <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
             <Label Text="{Binding Message}" />
             <ActivityIndicator Color="Green" IsRunning="{Binding IsBusy}" />
+            <Button Command="{Binding LoginCommand}"
+                    IsEnabled="{Binding LoginButtonEnabled}"
+                    Text="Authenticate" />
+            <Button Command="{Binding SkipCommand}"
+                    IsEnabled="{Binding SkipButtonEnabled}"
+                    Text="Skip" />
         </StackLayout>
 	</ContentPage.Content>
 </ContentPage>

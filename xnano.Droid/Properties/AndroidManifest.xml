@@ -1,7 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="0.1" package="org.openxbox.xnano">
-	<uses-sdk android:minSdkVersion="21" />
-	<application android:label="xnano" android:largeHeap="true" android:theme="@style/MainTheme"></application>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.openxbox.xnano" android:installLocation="auto" android:versionCode="1" android:versionName="0.1">
+	<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28" />
 	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 	<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+	<application android:label="xnano" android:largeHeap="true" android:theme="@style/MainTheme"></application>
 </manifest>

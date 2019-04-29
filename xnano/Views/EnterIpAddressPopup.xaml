@@ -2,9 +2,11 @@
 <pages:PopupPage
 	xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+        prism:ViewModelLocator.AutowireViewModel="True"
     xmlns:animations="clr-namespace:Rg.Plugins.Popup.Animations;assembly=Rg.Plugins.Popup"
 	xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup"
-	x:Class="xnano.Views.EnterIpAddressPage"
+	x:Class="xnano.Views.EnterIpAddressPopup"
 	Title="{Binding Title}">
     <!--  You can set an animation in the xaml file or in the csharp code behind  -->
     <pages:PopupPage.Animation>
@@ -20,8 +22,9 @@
 	</pages:PopupPage.Animation>
 	<StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
 		<Label Text="{Binding Message}" />
-		<Entry Text="{Binding IpAddress}" Placeholder="192.168.0.123" Keyboard="Default" />
+		<Entry Text="{Binding IpAddressInput}" Placeholder="192.168.0.123" Keyboard="Default" />
 		<Label Text="{Binding ErrorMessage}" TextColor="Red" />
 		<Button Text="Add" FontSize="10" Command="{Binding AddCommand}" />
+        <Button Text="Cancel" FontSize="10" Command="{Binding CancelCommand}" />
 	</StackLayout>
 </pages:PopupPage>

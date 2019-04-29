@@ -5,11 +5,10 @@ using Xamarin.Forms;
 
 namespace xnano.Views
 {
-    public partial class StreamPage : ContentPage
+    public partial class AuthenticationPage : ContentPage
     {
-        public StreamPage()
+        public AuthenticationPage()
         {
-            // A custom renderer is used to display this page
             InitializeComponent();
         }
     }

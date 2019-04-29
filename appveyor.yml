@@ -7,11 +7,11 @@ configuration:
 
 environment:
   keystore-password:
-    secure: DbsLa0YaOQb8BJox0D0crKWqGL3TiiUuSvVzTCTHoFkL8ZdSOwON8khP8tnIZnavFLbDxQyqLKC2PSjUAxbIep/tkUA6H5RTQ8FfYP+dLoBiUxCAONaklBIb8ZBCMRLzDqq2xjJ4T0i57jl8t3eGEQ==
+    secure: jjlLduFA9c2/0mpy4PMbgQWl1bVmuFI4u15WnW64Daz0GQvclDQpCQtgbhdQdI/QelvEPy/YHXj8Nl3fnncfiQ==
 
   matrix:
     # Android
-    - msbuild_cmd: '/t:Restore,PackageForAndroid xnano.Droid\xnano.Droid.csproj'
+    - msbuild_cmd: '/t:Restore,SignAndroidPackage /p:AndroidKeyStore=true /p:AndroidSigningKeyAlias=OpenXboxGithub /p:AndroidSigningKeyPass=%keystore-password% /p:AndroidSigningKeyStore=OpenXboxGithub.keystore /p:AndroidSigningStorePass=%keystore-password% xnano.Droid\xnano.Droid.csproj'
     # iOS
     - msbuild_cmd: '/t:Restore,Build /p:Platform="iPhone" xnano.iOS\xnano.iOS.csproj'
 

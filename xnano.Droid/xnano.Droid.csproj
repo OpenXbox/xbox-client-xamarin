@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -49,11 +49,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="MainActivity.cs" />
-    <Compile Include="Gamestream\AudioHandler.cs" />
-    <Compile Include="Gamestream\VideoHandler.cs" />
+    <Compile Include="Gamestream\AudioDecoder.cs" />
+    <Compile Include="Gamestream\VideoDecoder.cs" />
     <Compile Include="Gamestream\InputHandler.cs" />
     <Compile Include="Gamestream\MediaCoreConsumer.cs" />
     <Compile Include="Renderers\StreamPageRenderer.cs" />
+    <Compile Include="Gamestream\CircularBuffer.cs" />
+    <Compile Include="Gamestream\SurfaceTextureEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\icon.png" />
@@ -68,11 +70,7 @@
     <AndroidResource Include="Resources\drawable\RecordButton.png" />
     <AndroidResource Include="Resources\layout\GamestreamLayout.axml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\values\" />
-    <Folder Include="Gamestream\" />
-    <Folder Include="Renderers\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <AndroidAsset Include="Assets\player.html" />
     <AndroidAsset Include="Assets\player.js" />
@@ -87,7 +85,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Xam.Plugin.Connectivity" Version="3.2.0" />
     <PackageReference Include="Rg.Plugins.Popup" Version="1.1.5.188" />
     <PackageReference Include="Xamarin.Android.Support.Animated.Vector.Drawable" Version="28.0.0.1" />
@@ -107,16 +104,12 @@
     <PackageReference Include="Xamarin.Android.Support.v7.RecyclerView" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="28.0.0.1" />
-    <PackageReference Include="Xamarin.Forms" Version="3.6.0.264807" />
+    <PackageReference Include="Xamarin.Forms" Version="3.6.0.344457" />
     <PackageReference Include="Xamarin.Auth" Version="1.6.0.4" />
     <PackageReference Include="Xamarin.Essentials" Version="1.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Portable.BouncyCastle" Version="1.8.5" />
     <PackageReference Include="System.Buffers" Version="4.5.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
-    <PackageReference Include="RestSharp" Version="106.6.9" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\xnano\xnano.csproj">

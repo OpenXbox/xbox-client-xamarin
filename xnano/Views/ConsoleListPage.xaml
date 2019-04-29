@@ -2,7 +2,11 @@
 <ContentPage
 	xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+        prism:ViewModelLocator.AutowireViewModel="True"
+    xmlns:b="clr-namespace:Prism.Behaviors;assembly=Prism.Forms"
 	x:Class="xnano.Views.ConsoleListPage"
+    x:Name="ConsoleList"
 	Title="{Binding Title}">
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Text="Add" Command="{Binding AddConsoleCommand}" />
@@ -11,23 +15,33 @@
 	<ContentPage.Content>
 		<StackLayout>
 			<ListView x:Name="ConsoleListView"
-				ItemsSource="{Binding Items}"
+				ItemsSource="{Binding Consoles}"
+                RefreshCommand="{Binding RefreshCommand}"
+                IsRefreshing="{Binding IsBusy, Mode=OneWay}"
 				VerticalOptions="FillAndExpand"
 				HasUnevenRows="true"
-				RefreshCommand="{Binding RefreshCommand}"
 				IsPullToRefreshEnabled="true"
-				IsRefreshing="{Binding IsBusy, Mode=OneWay}"
-				CachingStrategy="RecycleElement"
-				SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+				CachingStrategy="RecycleElement">
+                <ListView.Behaviors>
+                    <b:EventToCommandBehavior EventName="ItemTapped" 
+                                              Command="{Binding ItemTappedCommand}"
+                                              EventArgsParameterPath="Item" />
+                </ListView.Behaviors>
 				<ListView.ItemTemplate>
 					<DataTemplate>
 						<ViewCell>
+                            <ViewCell.ContextActions>
+                                <MenuItem Command="{Binding Path=BindingContext.DeleteItemCommand, Source={x:Reference ConsoleList}}"
+                                    CommandParameter="{Binding .}"
+                                    Text="Delete"
+                                    IsDestructive="True" />
+                            </ViewCell.ContextActions>
 							<StackLayout Orientation="Horizontal" HorizontalOptions="Fill">
 								<StackLayout Orientation="Vertical">
 									<Label Text = "{Binding Name}" FontSize="24"/>
 									<Label Text = "{Binding Address, StringFormat='{0}'}"/>
 								</StackLayout>
-								<!-- Image Source="{Binding Image}" HorizontalOptions="End" AbsoluteLayout.LayoutBounds="250.25, 0.25, 50, 50 "/ -->
+								<Label Text = "{Binding State, StringFormat='{0}'}" HorizontalOptions="End" />
 							</StackLayout>
 						</ViewCell>
 					</DataTemplate>

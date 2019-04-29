@@ -1,39 +1,43 @@
 ﻿using System;
-using System.IO;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 using Android.App;
 using Android.Content;
-using Android.Hardware;
 using Android.Views;
 using Android.Graphics;
 using Android.Widget;
 using System.Threading.Tasks;
 
 using xnano.Views;
-using xnano.Droid;
 using xnano.Droid.Renderers;
+using xnano.Droid.Gamestream;
 
 [assembly: ExportRenderer(typeof(StreamPage), typeof(StreamPageRenderer))]
 namespace xnano.Droid.Renderers
 {
     public class StreamPageRenderer : PageRenderer, TextureView.ISurfaceTextureListener
     {
-        global::Android.Widget.Button recordButton;
-        global::Android.Widget.Button exitButton;
-        global::Android.Views.View view;
+        private MediaCoreConsumer _gamestreamConsumer;
 
-        Gamestream.MediaCoreConsumer _gamestreamConsumer;
+        private global::Android.Widget.Button _recordButton;
+        private global::Android.Widget.Button _exitButton;
+        private global::Android.Views.View _view;
 
-        Activity activity;
-        TextureView textureView;
-        SurfaceTexture surfaceTexture;
+        private Activity _activity;
+        private TextureView _textureView;
+        private SurfaceTexture _surfaceTexture;
 
-        bool _streamInitialized;
+        event EventHandler<SurfaceTextureEventArgs> FireSurfaceTextureEvent;
+
+        private const SystemUiFlags WindowFlags = SystemUiFlags.LayoutStable |
+                                                  SystemUiFlags.LayoutHideNavigation |
+                                                  SystemUiFlags.LayoutFullscreen |
+                                                  SystemUiFlags.HideNavigation |
+                                                  SystemUiFlags.Fullscreen |
+                                                  SystemUiFlags.ImmersiveSticky;
 
         public StreamPageRenderer(Context context) : base(context)
         {
-            _streamInitialized = false;
         }
 
         protected override void OnElementChanged(ElementChangedEventArgs<Page> e)
@@ -49,7 +53,9 @@ namespace xnano.Droid.Renderers
             {
                 SetupUserInterface();
                 SetupEventHandlers();
-                AddView(view);
+
+                AddView(_view);
+                HideButtons();
             }
             catch (Exception ex)
             {
@@ -59,20 +65,46 @@ namespace xnano.Droid.Renderers
 
         void SetupUserInterface()
         {
-            activity = this.Context as Activity;
-            view = activity.LayoutInflater.Inflate(Resource.Layout.GamestreamLayout, this, false);
+            _activity = this.Context as Activity;
+            if (_activity != null)
+            {
+                _activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)WindowFlags;
+                _activity.Window.AddFlags(WindowManagerFlags.KeepScreenOn);
+                _view = _activity.LayoutInflater.Inflate(Resource.Layout.GamestreamLayout, this, false);
+            }
 
-            textureView = view.FindViewById<TextureView>(Resource.Id.textureView);
-            textureView.SurfaceTextureListener = this;
+            _textureView = _view.FindViewById<TextureView>(Resource.Id.textureView);
+            _textureView.SurfaceTextureListener = this;
+
+            _recordButton = _view.FindViewById<global::Android.Widget.Button>(Resource.Id.recordButton);
+            _exitButton = _view.FindViewById<global::Android.Widget.Button>(Resource.Id.exitButton);
+
+            HideButtons();
         }
 
         void SetupEventHandlers()
         {
-            recordButton = view.FindViewById<global::Android.Widget.Button>(Resource.Id.recordButton);
-            recordButton.Click += RecordButton_Click;
+            _textureView.Click += TextureView_Click;
+            _recordButton.Click += RecordButton_Click;
+            _exitButton.Click += ExitButton_Click;
+        }
 
-            exitButton = view.FindViewById<global::Android.Widget.Button>(Resource.Id.exitButton);
-            exitButton.Click += ExitButton_Click;
+        void HideButtons()
+        {
+            _recordButton.Enabled = false;
+            _exitButton.Enabled = false;
+
+            _recordButton.Visibility = ViewStates.Invisible;
+            _exitButton.Visibility = ViewStates.Invisible;
+        }
+
+        void ShowButtons()
+        {
+            _recordButton.Visibility = ViewStates.Visible;
+            _exitButton.Visibility = ViewStates.Visible;
+
+            _recordButton.Enabled = true;
+            _exitButton.Enabled = true;
         }
 
         protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -82,53 +114,70 @@ namespace xnano.Droid.Renderers
             var msw = MeasureSpec.MakeMeasureSpec(r - l, MeasureSpecMode.Exactly);
             var msh = MeasureSpec.MakeMeasureSpec(b - t, MeasureSpecMode.Exactly);
 
-            view.Measure(msw, msh);
-            view.Layout(0, 0, r - l, b - t);
+            _view.Measure(msw, msh);
+            _view.Layout(0, 0, r - l, b - t);
+        }
+
+        public override void OnWindowFocusChanged(bool hasWindowFocus)
+        {
+            base.OnWindowFocusChanged(hasWindowFocus);
+            if (hasWindowFocus && _activity != null)
+                _activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)WindowFlags;
+
         }
 
         public void OnSurfaceTextureUpdated(SurfaceTexture surface)
         {
-            // TODO
+            FireSurfaceTextureEvent?.Invoke(this, new SurfaceTextureEventArgs(
+                SurfaceTextureEventType.TextureUpdated, surface));
         }
 
         public void OnSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
         {
-            textureView.LayoutParameters = new FrameLayout.LayoutParams(width, height);
-            surfaceTexture = surface;
+            _textureView.LayoutParameters = new FrameLayout.LayoutParams(width, height);
+            _surfaceTexture = surface;
 
-            StartRenderingStream();
+            // Initialize consumer and register event handler
+            _gamestreamConsumer = new Gamestream.MediaCoreConsumer();
+            FireSurfaceTextureEvent += _gamestreamConsumer.OnSurfaceEventArgs;
+
+            FireSurfaceTextureEvent?.Invoke(this, new SurfaceTextureEventArgs(
+                SurfaceTextureEventType.TextureAvailable, surface));
         }
 
         public bool OnSurfaceTextureDestroyed(SurfaceTexture surface)
         {
-            // TODO: Release resources
+            FireSurfaceTextureEvent?.Invoke(this, new SurfaceTextureEventArgs(
+                SurfaceTextureEventType.TextureDestroyed, surface));
+
+            // Disconnect event handler
+            FireSurfaceTextureEvent -= _gamestreamConsumer.OnSurfaceEventArgs;
             return true;
         }
 
         public void OnSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
         {
-            StartRenderingStream();
-        }
-
-        async void StartRenderingStream()
-        {
-            if (_streamInitialized)
-                return;
-
-            _streamInitialized = true;
-
-            _gamestreamConsumer = new Gamestream.MediaCoreConsumer(
-                surfaceTexture, null, null);
-            xnano.Services.SmartGlassConnection.Instance.AddConsumer(_gamestreamConsumer);
-            await xnano.Services.SmartGlassConnection.Instance.StartStream();
+            FireSurfaceTextureEvent?.Invoke(this, new SurfaceTextureEventArgs(
+                SurfaceTextureEventType.TextureSizeChanged, surface,
+                width, height));
         }
 
         async void RecordButton_Click(object sender, EventArgs e)
         {
+            await Task.CompletedTask;
         }
 
         async void ExitButton_Click(object sender, EventArgs e)
         {
+            await Task.CompletedTask;
+        }
+
+        async void TextureView_Click(object sender, EventArgs e)
+        {
+            ShowButtons();
+            await Task.Delay(TimeSpan.FromSeconds(3));
+            HideButtons();
+            await Task.CompletedTask;
         }
     }
 }

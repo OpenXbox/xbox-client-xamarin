@@ -1,12 +1,12 @@
 ﻿using System;
-
 using Android.App;
-using Android.Content;
 using Android.Content.PM;
-using Android.Runtime;
-using Android.Views;
+using Android.Net;
+using Android.Net.Wifi;
 using Android.Widget;
 using Android.OS;
+using Rg.Plugins.Popup;
+using Xamarin.Auth.Presenters.XamarinAndroid;
 using Xamarin.Forms;
 
 namespace xnano.Droid
@@ -17,31 +17,46 @@ namespace xnano.Droid
         ScreenOrientation = ScreenOrientation.Portrait)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
-        bool _landscapeOrientation = false;
+        private const string WifiTag = "xnano.Droid";
 
-        protected override void OnCreate(Bundle bundle)
+        private WifiManager.WifiLock WifiLock { get; set; }
+
+        protected override void OnCreate(Bundle savedInstanceState)
         {
+            base.OnCreate(savedInstanceState);
+
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
 
-            base.OnCreate(bundle);
-
-            MessagingCenter.Subscribe<Views.StreamPage>(this, "landscape", sender =>
+            MessagingCenter.Subscribe<ViewModels.StreamPageViewModel>(this, "landscape", sender =>
             {
                 LockRotation(Orientation.Horizontal);
             });
 
-            MessagingCenter.Subscribe<Views.StreamPage>(this, "portrait", sender =>
+            MessagingCenter.Subscribe<ViewModels.StreamPageViewModel>(this, "portrait", sender =>
             {
                 LockRotation(Orientation.Vertical);
             });
 
-            Rg.Plugins.Popup.Popup.Init(this, bundle);
+            Popup.Init(this, savedInstanceState);
 
-            global::Xamarin.Forms.Forms.Init(this, bundle);
-            global::Xamarin.Auth.Presenters.XamarinAndroid.AuthenticationConfiguration.Init(this, bundle);
+            Forms.Init(this, savedInstanceState);
+            AuthenticationConfiguration.Init(this, savedInstanceState);
+
+            if (ApplicationContext.GetSystemService(WifiService) is WifiManager wifiManager)
+            {
+                WifiLock = wifiManager.CreateWifiLock(WifiMode.FullHighPerf, WifiTag);
+                WifiLock.SetReferenceCounted(false);
+                WifiLock.Acquire();
+            }
 
             LoadApplication(new App());
+        }
+
+        protected override void OnDestroy()
+        {
+            ReleaseWifiLock();
+            base.OnDestroy();
         }
 
         private void LockRotation(Orientation orientation)
@@ -54,6 +69,15 @@ namespace xnano.Droid
                 case Orientation.Horizontal:
                     RequestedOrientation = ScreenOrientation.Landscape;
                     break;
+            }
+        }
+
+        private void ReleaseWifiLock()
+        {
+            if (WifiLock != null)
+            {
+                WifiLock.Release();
+                WifiLock = null;
             }
         }
     }

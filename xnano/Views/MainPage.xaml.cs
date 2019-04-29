@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using Xamarin.Forms;
 
 namespace xnano.Views
 {
-    public partial class ConsoleListPage : ContentPage
+    public partial class MainPage : ContentPage
     {
-        public ConsoleListPage()
+        public MainPage()
         {
             InitializeComponent();
         }
