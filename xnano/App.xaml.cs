@@ -30,7 +30,6 @@ namespace xnano
             containerRegistry.RegisterForNavigation<AuthenticationPage>();
             containerRegistry.RegisterForNavigation<ConsoleListPage>();
             containerRegistry.RegisterForNavigation<EnterIpAddressPopup>();
-            containerRegistry.RegisterForNavigation<ConnectionPage>();
             containerRegistry.RegisterForNavigation<StreamPage>();
 
             containerRegistry.RegisterPopupNavigationService();
