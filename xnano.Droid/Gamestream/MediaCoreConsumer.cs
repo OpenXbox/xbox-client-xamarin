@@ -12,6 +12,8 @@ namespace xnano.Droid.Gamestream
     {
         private bool _disposed;
 
+        private NanoClient _nanoClient;
+
         private readonly VideoDecoder _video;
         private readonly VideoAssembler _videoAssembler;
 
@@ -19,14 +21,16 @@ namespace xnano.Droid.Gamestream
         private readonly AudioAssembler _audioAssembler;
         private readonly SmartGlass.Nano.Packets.AudioFormat _audioFormat;
 
-        public MediaCoreConsumer()
+        public MediaCoreConsumer(NanoClient nano)
         {
-            VideoFormat videoFormat = SmartGlassConnection.Instance.VideoFormat;
+            _nanoClient = nano;
+
+            VideoFormat videoFormat = _nanoClient.Video.AvailableFormats[0];
             _video = new VideoDecoder(MediaFormat.MimetypeVideoAvc,
                 (int)videoFormat.Width, (int)videoFormat.Height);
             _videoAssembler = new VideoAssembler();
 
-            _audioFormat = SmartGlassConnection.Instance.AudioFormat;
+            _audioFormat = _nanoClient.Audio.AvailableFormats[0];
             _audio = new AudioDecoder(MediaFormat.MimetypeAudioAac,
                 (int)_audioFormat.SampleRate, (int)_audioFormat.Channels);
             _audioAssembler = new AudioAssembler();
@@ -38,12 +42,12 @@ namespace xnano.Droid.Gamestream
             {
                 case SurfaceTextureEventType.TextureAvailable:
                     _video.SetSurfaceTexture(args.SurfaceTexture);
-                    SmartGlassConnection.Instance.NanoClient.AddConsumer(this);
-                    Task.Run(async () => await SmartGlassConnection.Instance.NanoClient.StartStreamAsync());
+                    _nanoClient.AddConsumer(this);
+                    Task.Run(async () => await _nanoClient.StartStreamAsync());
                     break;
                 case SurfaceTextureEventType.TextureDestroyed:
-                    Task.Run(async () => await SmartGlassConnection.Instance.NanoClient.StopStreamAsync());
-                    SmartGlassConnection.Instance.NanoClient.RemoveConsumer(this);
+                    Task.Run(async () => await _nanoClient.StopStreamAsync());
+                    _nanoClient.RemoveConsumer(this);
                     _video.RemoveSurfaceTexture();
                     StopDecoding();
                     break;

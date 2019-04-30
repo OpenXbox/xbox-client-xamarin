@@ -142,7 +142,7 @@ namespace xnano.Droid.Renderers
             _surfaceTexture = surface;
 
             // Initialize consumer and register event handler
-            _gamestreamConsumer = new Gamestream.MediaCoreConsumer();
+            _gamestreamConsumer = new Gamestream.MediaCoreConsumer(_viewModel._nanoClient);
             FireSurfaceTextureEvent += _gamestreamConsumer.OnSurfaceEventArgs;
 
             FireSurfaceTextureEvent?.Invoke(this, new SurfaceTextureEventArgs(

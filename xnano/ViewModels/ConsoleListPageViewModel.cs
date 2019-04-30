@@ -11,6 +11,7 @@ using Prism.Services;
 using xnano.Models;
 using SmartGlass;
 using SmartGlass.Nano;
+using SmartGlass.Common;
 
 namespace xnano.ViewModels
 {
@@ -78,17 +79,22 @@ namespace xnano.ViewModels
             {
                 IsBusy = true;
                 StatusMessage = "Connecting to console...";
-                var success = await Task.Run<bool>(
+                var nanoClient = await Task.Run<NanoClient>(
                     async () => await ConnectToConsole(dev));
 
                 StatusMessage = "Idle";
                 IsBusy = false;
 
-                if (!success)
+                if (nanoClient == null)
                     return;
 
+                var navParams = new NavigationParameters
+                {
+                    { "nano", nanoClient }
+                };
+
                 Xamarin.Forms.Device.BeginInvokeOnMainThread(
-                    async () => await NavigateToStreamPage(dev));
+                    async () => await NavigateToStreamPage(navParams));
             });
 
             ItemTappedCommand = new Command<SmartGlass.Device>(dev =>
@@ -136,7 +142,7 @@ namespace xnano.ViewModels
         {
             try
             {
-                var dev = await Services.SmartGlassConnection.Instance.FindConsole(address);
+                var dev = await Services.SmartGlassConnection.FindConsole(address);
                 Consoles.AddOrUpdateConsole(dev);
             }
             catch (TimeoutException)
@@ -150,7 +156,7 @@ namespace xnano.ViewModels
         {
             try
             {
-                var devs = await Services.SmartGlassConnection.Instance.DiscoverConsoles();
+                var devs = await Services.SmartGlassConnection.DiscoverConsoles();
                 UpdateConsoleList(devs);
             }
             catch (Exception ex)
@@ -160,102 +166,20 @@ namespace xnano.ViewModels
             }
         }
 
-        async Task<bool> InitializeSmartGlass(string address)
+        async Task<NanoClient> ConnectToConsole(SmartGlass.Device device)
         {
-            string lastStatus = String.Empty;
             try
             {
-                lastStatus = "Connecting to console";
-                var client = await SmartGlassClient.ConnectAsync(address);
-
-                lastStatus = "Waiting for Broadcast channel";
-                await client.BroadcastChannel.WaitForEnabledAsync(
-                    TimeSpan.FromSeconds(5));
-
-                if (!client.BroadcastChannel.Enabled)
-                {
-                    throw new NotSupportedException("Broadcast channel is not enabled");
-                }
-
-                lastStatus = "Starting gamestream via Broadcast channel";
-                var config = Services.SmartGlassConnection.Instance.GamestreamConfiguration;
-                var session = await client.BroadcastChannel
-                                    .StartGamestreamAsync(config);
-
-                Services.SmartGlassConnection.Instance.Session = session;
-                Services.SmartGlassConnection.Instance.SgClient = client;
+                var ipAddress = device.Address.ToString();
+                var session = await Services.SmartGlassConnection.ConnectViaSmartGlass(ipAddress);
+                return await Services.SmartGlassConnection.ConnectViaNano(ipAddress, session);
             }
-            catch (TimeoutException)
+            catch (Exception e)
             {
                 Xamarin.Forms.Device.BeginInvokeOnMainThread(
-                    async () => await ShowErrorDisplayAlert($"{lastStatus} timed out!"));
-                return false;
+                    async () => await ShowErrorDisplayAlert(e.Message));
+                return null;
             }
-            catch (NotSupportedException e)
-            {
-                Xamarin.Forms.Device.BeginInvokeOnMainThread(
-                    async () => await ShowErrorDisplayAlert($"{e.Message}"));
-                return false;
-            }
-            catch (Exception)
-            {
-                Xamarin.Forms.Device.BeginInvokeOnMainThread(
-                    async () => await ShowErrorDisplayAlert($"Unknown error: {lastStatus}"));
-                return false;
-            }
-
-            return true;
-        }
-
-        async Task<bool> InitializeGamestreaming(string address)
-        {
-            string lastStatus = String.Empty;
-            var client = new NanoClient(address,
-                Services.SmartGlassConnection.Instance.Session);
-
-            try
-            {
-                lastStatus = "Initializing Nano protocol";
-                await client.InitializeProtocolAsync();
-
-                var videoFmt = client.VideoFormats[0];
-                var audioFmt = client.AudioFormats[0];
-
-                lastStatus = "Initializing Nano stream";
-                await client.InitializeStreamAsync(audioFmt, videoFmt);
-
-                Services.SmartGlassConnection.Instance.NanoClient = client;
-            }
-            catch (TimeoutException)
-            {
-                Xamarin.Forms.Device.BeginInvokeOnMainThread(
-                    async () => await ShowErrorDisplayAlert($"{lastStatus} timed out!"));
-                return false;
-            }
-            catch (Exception)
-            {
-                Xamarin.Forms.Device.BeginInvokeOnMainThread(
-                    async () => await ShowErrorDisplayAlert($"Unknown error: {lastStatus}"));
-                return false;
-            }
-
-            return true;
-        }
-
-        async Task<bool> ConnectToConsole(SmartGlass.Device device)
-        {
-            var address = device.Address.ToString();
-            if(!await InitializeSmartGlass(address))
-            {
-                return false;
-            }
-
-            if (!await InitializeGamestreaming(address))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         async Task ShowErrorDisplayAlert(string message)
@@ -268,10 +192,9 @@ namespace xnano.ViewModels
             await _navigationService.NavigateAsync(nameof(Views.EnterIpAddressPopup));
         }
 
-        async Task NavigateToStreamPage(SmartGlass.Device device)
+        async Task NavigateToStreamPage(INavigationParameters navParams)
         {
-            Services.SmartGlassConnection.Instance.IPAddress = device.Address.ToString();
-            await _navigationService.NavigateAsync(nameof(Views.StreamPage));
+            await _navigationService.NavigateAsync(nameof(Views.StreamPage), navParams);
         }
     }
 }

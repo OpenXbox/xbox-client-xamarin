@@ -15,41 +15,78 @@ using System.Net;
 
 namespace xnano.Services
 {
-    public class SmartGlassConnection
+    public static class SmartGlassConnection
     {
-        /* Singleton */
-        static SmartGlassConnection _instance;
-        public static SmartGlassConnection Instance
+        public static GamestreamConfiguration StandardGamestreamConfig
+            => GamestreamConfiguration.GetStandardConfig();
+
+        public static async Task<GamestreamSession> ConnectViaSmartGlass(string ipAddress)
         {
-            get
+            string lastStatus = String.Empty;
+            try
             {
-                if (_instance == null)
-                    _instance = new SmartGlassConnection();
-                return _instance;
+                lastStatus = "Connecting to console";
+                var client = await SmartGlassClient.ConnectAsync(ipAddress);
+
+                lastStatus = "Waiting for Broadcast channel";
+                await client.BroadcastChannel.WaitForEnabledAsync(
+                    TimeSpan.FromSeconds(5));
+
+                if (!client.BroadcastChannel.Enabled)
+                {
+                    throw new NotSupportedException("Broadcast channel is not enabled");
+                }
+
+                lastStatus = "Starting gamestream via Broadcast channel";
+                return await client.BroadcastChannel.StartGamestreamAsync(StandardGamestreamConfig);
+            }
+            catch (TimeoutException)
+            {
+                throw new Exception($"{lastStatus} timed out!");
+            }
+            catch (NotSupportedException e)
+            {
+                throw e;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Unknown error: {lastStatus}, message: {e.Message}");
             }
         }
 
-        public GamestreamConfiguration GamestreamConfiguration =>
-            GamestreamConfiguration.GetStandardConfig();
+        public static async Task<NanoClient> ConnectViaNano(string ipAddress, GamestreamSession session)
+        {
+            string lastStatus = String.Empty;
+            try
+            {
+                var client = new NanoClient(ipAddress, session);
+                lastStatus = "Initializing Nano protocol";
+                await client.InitializeProtocolAsync();
 
-        public SmartGlassClient SgClient { get; set; }
-        public NanoClient NanoClient { get; set; }
-        public GamestreamSession Session { get; set; }
+                var videoFmt = client.VideoFormats[0];
+                var audioFmt = client.AudioFormats[0];
 
-        public SmartGlass.Nano.Packets.VideoFormat VideoFormat =>
-            NanoClient.VideoFormats[0];
-        public SmartGlass.Nano.Packets.AudioFormat AudioFormat =>
-            NanoClient.AudioFormats[0];
+                lastStatus = "Initializing Nano stream";
+                await client.InitializeStreamAsync(audioFmt, videoFmt);
 
-        public string IPAddress { get; set; }
+                return client;
+            }
+            catch (TimeoutException)
+            {
+                throw new Exception($"{lastStatus} timed out!");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Unknown error: {lastStatus}, message: {e.Message}");
+            }
+        }
 
-
-        public Task<IEnumerable<SmartGlass.Device>> DiscoverConsoles()
+        public static Task<IEnumerable<SmartGlass.Device>> DiscoverConsoles()
         {
             return Device.DiscoverAsync();
         }
 
-        public Task<SmartGlass.Device> FindConsole(IPAddress addr)
+        public static Task<SmartGlass.Device> FindConsole(IPAddress addr)
         {
             return Device.PingAsync(addr.ToString());
         }
