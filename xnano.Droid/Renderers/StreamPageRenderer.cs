@@ -9,6 +9,7 @@ using Android.Widget;
 using System.Threading.Tasks;
 
 using xnano.Views;
+using xnano.ViewModels;
 using xnano.Droid.Renderers;
 using xnano.Droid.Gamestream;
 
@@ -17,6 +18,7 @@ namespace xnano.Droid.Renderers
 {
     public class StreamPageRenderer : PageRenderer, TextureView.ISurfaceTextureListener
     {
+        private StreamPageViewModel _viewModel;
         private MediaCoreConsumer _gamestreamConsumer;
 
         private global::Android.Widget.Button _recordButton;
@@ -48,6 +50,8 @@ namespace xnano.Droid.Renderers
             {
                 return;
             }
+
+            _viewModel = Element.BindingContext as StreamPageViewModel;
 
             try
             {
