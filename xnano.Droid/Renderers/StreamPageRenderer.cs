@@ -16,7 +16,7 @@ using xnano.Droid.Gamestream;
 [assembly: ExportRenderer(typeof(StreamPage), typeof(StreamPageRenderer))]
 namespace xnano.Droid.Renderers
 {
-    public class StreamPageRenderer : PageRenderer, TextureView.ISurfaceTextureListener
+    public class StreamPageRenderer : PageRenderer
     {
         private StreamPageViewModel _viewModel;
         private MediaCoreConsumer _gamestreamConsumer;
@@ -27,9 +27,6 @@ namespace xnano.Droid.Renderers
 
         private Activity _activity;
         private TextureView _textureView;
-        private SurfaceTexture _surfaceTexture;
-
-        event EventHandler<SurfaceTextureEventArgs> FireSurfaceTextureEvent;
 
         private const SystemUiFlags WindowFlags = SystemUiFlags.LayoutStable |
                                                   SystemUiFlags.LayoutHideNavigation |
@@ -59,6 +56,8 @@ namespace xnano.Droid.Renderers
                 SetupEventHandlers();
 
                 AddView(_view);
+                SetupCore();
+
                 HideButtons();
             }
             catch (Exception ex)
@@ -78,7 +77,6 @@ namespace xnano.Droid.Renderers
             }
 
             _textureView = _view.FindViewById<TextureView>(Resource.Id.textureView);
-            _textureView.SurfaceTextureListener = this;
 
             _recordButton = _view.FindViewById<global::Android.Widget.Button>(Resource.Id.recordButton);
             _exitButton = _view.FindViewById<global::Android.Widget.Button>(Resource.Id.exitButton);
@@ -91,6 +89,12 @@ namespace xnano.Droid.Renderers
             _textureView.Click += TextureView_Click;
             _recordButton.Click += RecordButton_Click;
             _exitButton.Click += ExitButton_Click;
+        }
+
+        void SetupCore()
+        {
+            _gamestreamConsumer = new Gamestream.MediaCoreConsumer(_viewModel._nanoClient);
+            _textureView.SurfaceTextureListener = _gamestreamConsumer;
         }
 
         void HideButtons()
@@ -130,41 +134,12 @@ namespace xnano.Droid.Renderers
 
         }
 
-        public void OnSurfaceTextureUpdated(SurfaceTexture surface)
-        {
-            FireSurfaceTextureEvent?.Invoke(this, new SurfaceTextureEventArgs(
-                SurfaceTextureEventType.TextureUpdated, surface));
-        }
-
+        /*
         public void OnSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
         {
             _textureView.LayoutParameters = new FrameLayout.LayoutParams(width, height);
-            _surfaceTexture = surface;
-
-            // Initialize consumer and register event handler
-            _gamestreamConsumer = new Gamestream.MediaCoreConsumer(_viewModel._nanoClient);
-            FireSurfaceTextureEvent += _gamestreamConsumer.OnSurfaceEventArgs;
-
-            FireSurfaceTextureEvent?.Invoke(this, new SurfaceTextureEventArgs(
-                SurfaceTextureEventType.TextureAvailable, surface));
         }
-
-        public bool OnSurfaceTextureDestroyed(SurfaceTexture surface)
-        {
-            FireSurfaceTextureEvent?.Invoke(this, new SurfaceTextureEventArgs(
-                SurfaceTextureEventType.TextureDestroyed, surface));
-
-            // Disconnect event handler
-            FireSurfaceTextureEvent -= _gamestreamConsumer.OnSurfaceEventArgs;
-            return true;
-        }
-
-        public void OnSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
-        {
-            FireSurfaceTextureEvent?.Invoke(this, new SurfaceTextureEventArgs(
-                SurfaceTextureEventType.TextureSizeChanged, surface,
-                width, height));
-        }
+        */
 
         async void RecordButton_Click(object sender, EventArgs e)
         {

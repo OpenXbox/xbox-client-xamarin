@@ -55,7 +55,6 @@
     <Compile Include="Gamestream\MediaCoreConsumer.cs" />
     <Compile Include="Renderers\StreamPageRenderer.cs" />
     <Compile Include="Gamestream\CircularBuffer.cs" />
-    <Compile Include="Gamestream\SurfaceTextureEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\icon.png" />

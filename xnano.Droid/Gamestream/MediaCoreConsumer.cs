@@ -1,14 +1,22 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Android.Graphics;
 using Android.Media;
+using Android.Views;
+
+using Xamarin.Forms;
+
 using SmartGlass.Nano;
 using SmartGlass.Nano.Consumer;
 using SmartGlass.Nano.Packets;
+
 using xnano.Services;
 
 namespace xnano.Droid.Gamestream
 {
-    public class MediaCoreConsumer : IConsumer, IDisposable
+    public class MediaCoreConsumer
+        : Java.Lang.Object, TextureView.ISurfaceTextureListener, IConsumer, IDisposable
     {
         private bool _disposed;
 
@@ -20,6 +28,9 @@ namespace xnano.Droid.Gamestream
         private readonly AudioDecoder _audio;
         private readonly AudioAssembler _audioAssembler;
         private readonly SmartGlass.Nano.Packets.AudioFormat _audioFormat;
+
+        private ICommand StartStreamCommand;
+        private ICommand StopStreamCommand;
 
         public MediaCoreConsumer(NanoClient nano)
         {
@@ -34,29 +45,40 @@ namespace xnano.Droid.Gamestream
             _audio = new AudioDecoder(MediaFormat.MimetypeAudioAac,
                 (int)_audioFormat.SampleRate, (int)_audioFormat.Channels);
             _audioAssembler = new AudioAssembler();
+
+            StartStreamCommand = new Command(async ()
+                => await _nanoClient.StartStreamAsync());
+
+            StopStreamCommand = new Command(async ()
+                => await _nanoClient.StopStreamAsync());
         }
 
-        public void OnSurfaceEventArgs(object sender, SurfaceTextureEventArgs args)
+        public void OnSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
         {
-            switch (args.EventType)
-            {
-                case SurfaceTextureEventType.TextureAvailable:
-                    _video.SetSurfaceTexture(args.SurfaceTexture);
-                    _nanoClient.AddConsumer(this);
-                    Task.Run(async () => await _nanoClient.StartStreamAsync());
-                    break;
-                case SurfaceTextureEventType.TextureDestroyed:
-                    Task.Run(async () => await _nanoClient.StopStreamAsync());
-                    _nanoClient.RemoveConsumer(this);
-                    _video.RemoveSurfaceTexture();
-                    StopDecoding();
-                    break;
-                case SurfaceTextureEventType.TextureSizeChanged:
-                    StopDecoding();
-                    _video.SetSurfaceTexture(args.SurfaceTexture);
-                    StartDecoding();
-                    break;
-            }
+            _video.SetSurfaceTexture(surface);
+            _nanoClient.AddConsumer(this);
+            StartStreamCommand.Execute(null);
+        }
+
+        public bool OnSurfaceTextureDestroyed(SurfaceTexture surface)
+        {
+            StopStreamCommand.Execute(null);
+            _nanoClient.RemoveConsumer(this);
+            _video.RemoveSurfaceTexture();
+            StopDecoding();
+
+            return true;
+        }
+
+        public void OnSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
+        {
+            StopDecoding();
+            _video.SetSurfaceTexture(surface);
+            StartDecoding();
+        }
+
+        public void OnSurfaceTextureUpdated(SurfaceTexture surface)
+        {
         }
 
         /// <summary>
