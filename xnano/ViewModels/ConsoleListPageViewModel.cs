@@ -51,9 +51,12 @@ namespace xnano.ViewModels
                 if (IsBusy)
                     return;
 
-                StatusMessage = "Refreshing consoles";
                 IsBusy = true;
 
+                StatusMessage = "Refreshing consoles";
+                await RefreshConsoles();
+
+                StatusMessage = "Discovering new consoles";
                 await DiscoverConsoles();
 
                 StatusMessage = "Idle";
@@ -150,6 +153,29 @@ namespace xnano.ViewModels
                 await _dialogService.DisplayAlertAsync(
                     "Error", $"Console {address} unreachable", "OK");
             }
+        }
+
+        async Task RefreshConsoles()
+        {
+            List<SmartGlass.Device> refreshedDevices = new List<SmartGlass.Device>();
+
+            foreach(var currentDev in Consoles)
+            {
+                try
+                {
+                    var ipAddress = currentDev.Address.ToString();
+                    var onlineDevice = await SmartGlass.Device.PingAsync(ipAddress);
+                    refreshedDevices.Add(onlineDevice);
+                }
+                catch (TimeoutException)
+                {
+                    // Create copy of device to replace old instance
+                    // => Triggers CollectionChanged on Consoles-object
+                    var offlineDevice = new SmartGlass.Device(currentDev);
+                    refreshedDevices.Add(offlineDevice);
+                }
+            }
+            UpdateConsoleList(refreshedDevices);
         }
 
         async Task DiscoverConsoles()
