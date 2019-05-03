@@ -51,6 +51,7 @@ namespace xnano.ViewModels
         /// </summary>
         /// <value>The ICommand</value>
         public ICommand LoginCommand { get; }
+        public ICommand OnAppearingCommand { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:xnano.ViewModels.LoadingViewModel"/> class.
@@ -64,7 +65,7 @@ namespace xnano.ViewModels
             _tokenStorage = tokenStorage;
 
             Title = "Welcome";
-            Message = "For authenticated connections to Xbox consoles, authentication is necessary";
+            Message = "Please authenticate...";
 
             SkipCommand = new Command(async () =>
             {
@@ -73,6 +74,37 @@ namespace xnano.ViewModels
 
             LoginCommand = new Command(async () => {
                 await NavigateToAuthenticationPage();
+            });
+
+            OnAppearingCommand = new Command(async () =>
+            {
+                await Task.Run(async () =>
+                {
+                    DisableButtons();
+
+                    IsBusy = true;
+                    if (!_freshAccountSet)
+                    {
+                        Message = "Loading tokens from storage...";
+                        var result = await _tokenStorage.LoadTokensFromStorageAsync();
+                    }
+
+                    if (_tokenStorage.IsTokenRefreshable && !_tokenStorage.IsXTokenValid)
+                    {
+                        Message = "Refreshing tokens...";
+                        await _tokenStorage.AuthenticateXboxLive();
+                        await _tokenStorage.SaveTokensToStorageAsync();
+                        IsBusy = false;
+                        Message = "Authentication successful!";
+                        Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(
+                            async () => await NavigateToConsoleListPage());
+                        return;
+                    }
+                    Message = "Please authenticate...";
+                    IsBusy = false;
+                    // User can chose to authenticate or skip authentication
+                    EnableButtons();
+                });
             });
         }
 
@@ -123,30 +155,7 @@ namespace xnano.ViewModels
 
         public override void OnAppearing()
         {
-            Task.Run(async () =>
-            {
-                DisableButtons();
-                if (!_freshAccountSet)
-                {
-                    var result = await _tokenStorage.LoadTokensFromStorageAsync();
-                    Console.WriteLine("");
-                }
-
-                if (_tokenStorage.IsTokenRefreshable && !_tokenStorage.IsXTokenValid)
-                {
-                    IsBusy = true;
-                    Message = "Refreshing tokens...";
-                    await _tokenStorage.AuthenticateXboxLive();
-                    await _tokenStorage.SaveTokensToStorageAsync();
-                    IsBusy = false;
-                    Message = "Authentication successful!";
-                    Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(
-                        async () => await NavigateToConsoleListPage());
-                }
-                else
-                    // User can chose to authenticate or skip authentication
-                    EnableButtons();
-            });
+            OnAppearingCommand.Execute(null);
         }
     }
 }
