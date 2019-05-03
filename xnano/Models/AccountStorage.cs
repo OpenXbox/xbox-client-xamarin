@@ -21,9 +21,12 @@ namespace xnano.Models
     {
         public string FileName { get; }
 
-        public PlainAccountStorage(string tokenFilename)
+        public PlainAccountStorage(string accountFilename, string baseDir = null)
         {
-            FileName = Path.Combine(FileSystem.AppDataDirectory, tokenFilename);
+            if (String.IsNullOrEmpty(baseDir))
+                baseDir = String.Empty;
+
+            FileName = Path.Combine(baseDir, accountFilename);
         }
 
         public Task<List<Account>> FindAccountsForServiceAsync()

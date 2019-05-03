@@ -1,7 +1,8 @@
-﻿
-using Prism;
+﻿using Prism;
 using Prism.Ioc;
 using Prism.Plugin.Popups;
+
+using Xamarin.Essentials;
 
 using xnano.Models;
 using xnano.Services;
@@ -44,7 +45,8 @@ namespace xnano
              * 
              * containerRegistry.RegisterInstance<ITokenStorage>(new TokenStorage(new SecureAccountStorage("xnano")));
              */
-            containerRegistry.RegisterInstance<ITokenStorage>(new TokenStorage(new PlainAccountStorage("tokens.json")));
+            containerRegistry.RegisterInstance<ITokenStorage>(
+                new TokenStorage(new PlainAccountStorage("tokens.json", FileSystem.AppDataDirectory)));
         }
     }
 
