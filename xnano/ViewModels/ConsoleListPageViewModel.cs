@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Xamarin.Forms;
+using Xamarin.Essentials;
 using Prism.Navigation;
 using Prism.Services;
 
 using xnano.Models;
 using SmartGlass;
 using SmartGlass.Nano;
-using SmartGlass.Common;
 
 namespace xnano.ViewModels
 {
@@ -27,6 +27,9 @@ namespace xnano.ViewModels
         }
 
         public SmartGlassConsoles Consoles { get; set; }
+
+        public ICommand LoadCachedConsoles { get; }
+        public ICommand SaveCachedConsoles { get; }
 
         public ICommand RefreshCommand { get; }
         public ICommand AddConsoleCommand { get; }
@@ -45,7 +48,22 @@ namespace xnano.ViewModels
             Title = "ConsoleList";
             StatusMessage = "Idle";
 
-            Consoles = new SmartGlassConsoles();
+            Consoles = new SmartGlassConsoles("consoles.json", FileSystem.AppDataDirectory);
+
+            LoadCachedConsoles = new Command(async () =>
+            {
+                IsBusy = true;
+                await Consoles.LoadCached();
+                IsBusy = false;
+            });
+
+            SaveCachedConsoles = new Command(async () =>
+            {
+                IsBusy = true;
+                await Consoles.SaveCached();
+                IsBusy = false;
+            });
+
             RefreshCommand = new Command(async () =>
             {
                 if (IsBusy)
@@ -221,6 +239,16 @@ namespace xnano.ViewModels
         async Task NavigateToStreamPage(INavigationParameters navParams)
         {
             await _navigationService.NavigateAsync(nameof(Views.StreamPage), navParams);
+        }
+
+        public override void OnAppearing()
+        {
+            LoadCachedConsoles.Execute(null);
+        }
+
+        public override void OnDisappearing()
+        {
+            SaveCachedConsoles.Execute(null);
         }
     }
 }
