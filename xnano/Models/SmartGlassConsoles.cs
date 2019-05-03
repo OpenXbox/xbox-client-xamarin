@@ -1,22 +1,28 @@
 ﻿using System;
-using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Diagnostics;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 using Xamarin.Essentials;
 using Newtonsoft.Json;
-using System.Collections.Generic;
+using System.Text;
 
 namespace xnano.Models
 {
     public class SmartGlassConsoles : ObservableCollection<SmartGlass.Device>
     {
-        const string PreferenceName = "consoles";
+        public string FileName { get; }
 
-        public SmartGlassConsoles() : base()
+        public SmartGlassConsoles(string accountFilename, string baseDir = null)
+            : base()
         {
-            LoadCached();
-            this.CollectionChanged += (sender, e) => SaveCached();
+            if (String.IsNullOrEmpty(baseDir))
+                baseDir = String.Empty;
+
+            FileName = Path.Combine(baseDir, accountFilename);
         }
 
         public void AddOrUpdateConsole(SmartGlass.Device device)
@@ -33,28 +39,56 @@ namespace xnano.Models
             }
         }
 
-        public void LoadCached()
+        public async Task<int> LoadCached()
         {
-            string json = Preferences.Get(PreferenceName, null);
-            if (json == null)
-                return;
+            IEnumerable<SmartGlass.Device> consoles = null;
+            try
+            {
+                using (var fs = File.OpenRead(FileName))
+                {
+                    byte[] jsonBytes = new byte[fs.Length];
+                    int length = await fs.ReadAsync(jsonBytes, 0, jsonBytes.Length);
+                    consoles = JsonConvert.DeserializeObject<IEnumerable<SmartGlass.Device>>(
+                        Encoding.UTF8.GetString(jsonBytes),
+                        SmartGlass.Device.GetJsonSerializerSettings());
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Failed loading cached consoles from {FileName}, error: {e}");
+                return 0;
+            }
 
-            var list = JsonConvert.DeserializeObject<IEnumerable<SmartGlass.Device>>(
-                json, SmartGlass.Device.GetJsonSerializerSettings());
-
-            foreach (SmartGlass.Device dev in list)
+            foreach (SmartGlass.Device dev in consoles)
             {
                 AddOrUpdateConsole(dev);
             }
+
+            return consoles.Count();
         }
 
-        void SaveCached()
+        public async Task<bool> SaveCached()
         {
             IEnumerable<SmartGlass.Device> list = this;
-            string json = JsonConvert.SerializeObject(
-                list, SmartGlass.Device.GetJsonSerializerSettings());
 
-            Preferences.Set(PreferenceName, json);
+            try
+            {
+                string json = JsonConvert.SerializeObject(
+                    list, SmartGlass.Device.GetJsonSerializerSettings());
+
+                using (var fs = File.OpenWrite(FileName))
+                {
+                    var bytes = Encoding.UTF8.GetBytes(json);
+                    await fs.WriteAsync(bytes, 0, bytes.Length);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Failed saving cached consoles, error: {e}");
+                return false;
+            }
+
+            return true;
         }
     }
 }
