@@ -1,0 +1,18 @@
+{
+  "Username": "XNanoXboxLiveUser",
+  "Properties": {
+    "access_token": "someDummyToken",
+    "token_type": "bearer",
+    "expires_in": "86400",
+    "scope": "service::user.auth.xboxlive.com::MBI_SSL",
+    "refresh_token": "anotherDummyToken",
+    "user_id": "100eff935482353",
+    "authentication_timestamp": "2018-03-22T23:02:54.0000000Z"
+  },
+  "Cookies": {
+    "Capacity": 300,
+    "Count": 0,
+    "MaxCookieSize": 4096,
+    "PerDomainCapacity": 20
+  }
+}
