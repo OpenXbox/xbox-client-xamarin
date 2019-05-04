@@ -19,6 +19,7 @@ namespace xnano.Droid.Renderers
     public class StreamPageRenderer : PageRenderer
     {
         private StreamPageViewModel _viewModel;
+        private InputHandler _inputHandler;
         private MediaCoreConsumer _gamestreamConsumer;
 
         private global::Android.Widget.Button _recordButton;
@@ -93,6 +94,7 @@ namespace xnano.Droid.Renderers
 
         void SetupCore()
         {
+            _inputHandler = new InputHandler(_viewModel._nanoClient);
             _gamestreamConsumer = new Gamestream.MediaCoreConsumer(_viewModel._nanoClient);
             _textureView.SurfaceTextureListener = _gamestreamConsumer;
         }
@@ -132,6 +134,31 @@ namespace xnano.Droid.Renderers
             if (hasWindowFocus && _activity != null)
                 _activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)WindowFlags;
 
+        }
+
+        /* Catching Gamepad actions */
+        public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
+        {
+            if ((e.Source & InputSourceType.Gamepad) != InputSourceType.Gamepad)
+                return base.OnKeyDown(keyCode, e);
+
+            return _inputHandler.OnKeyDown(keyCode, e);
+        }
+
+        public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
+        {
+            if ((e.Source & InputSourceType.Gamepad) != InputSourceType.Gamepad)
+                return base.OnKeyUp(keyCode, e);
+
+            return _inputHandler.OnKeyUp(keyCode, e);
+        }
+
+        public override bool OnGenericMotionEvent(MotionEvent e)
+        {
+            if ((e.Source & InputSourceType.Gamepad) != InputSourceType.Gamepad)
+                return base.OnGenericMotionEvent(e);
+
+            return _inputHandler.OnGenericMotionEvent(e);
         }
 
         /*
