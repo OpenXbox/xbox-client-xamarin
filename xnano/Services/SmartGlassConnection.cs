@@ -69,6 +69,9 @@ namespace xnano.Services
                 lastStatus = "Initializing Nano stream";
                 await client.InitializeStreamAsync(audioFmt, videoFmt);
 
+                lastStatus = "Initializing input channel";
+                await client.OpenInputChannelAsync(1280, 720);
+
                 return client;
             }
             catch (TimeoutException)
