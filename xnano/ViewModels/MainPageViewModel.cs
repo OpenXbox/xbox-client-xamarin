@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Xamarin.Forms;
+using Xamarin.Essentials;
 using Prism.Navigation;
 using Prism.Services;
 
@@ -15,8 +17,6 @@ namespace xnano.ViewModels
     {
         readonly IPageDialogService _dialogService;
         readonly ITokenStorage _tokenStorage;
-
-        private bool _freshAccountSet = false;
 
         bool _skipButtonEnabled = true;
         public bool SkipButtonEnabled
@@ -51,7 +51,7 @@ namespace xnano.ViewModels
         /// </summary>
         /// <value>The ICommand</value>
         public ICommand LoginCommand { get; }
-        public ICommand OnAppearingCommand { get; }
+        public ICommand LoadTokensCommand { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:xnano.ViewModels.LoadingViewModel"/> class.
@@ -62,50 +62,53 @@ namespace xnano.ViewModels
             : base(navigationService)
         {
             _dialogService = dialogService;
-            _tokenStorage = tokenStorage;
+            //_tokenStorage = tokenStorage;
+            _tokenStorage = new TokenStorage(new PlainAccountStorage("tokens.json", FileSystem.AppDataDirectory));
 
             Title = "Welcome";
             Message = "Please authenticate...";
 
             SkipCommand = new Command(async () =>
             {
-                await NavigateToConsoleListPage();
+                await SkipToConsoleListPage();
             });
 
             LoginCommand = new Command(async () => {
                 await NavigateToAuthenticationPage();
             });
 
-            OnAppearingCommand = new Command(async () =>
+            LoadTokensCommand = new Command<Xamarin.Auth.Account>(async acc =>
             {
-                await Task.Run(async () =>
-                {
-                    DisableButtons();
-
-                    IsBusy = true;
-                    if (!_freshAccountSet)
-                    {
-                        Message = "Loading tokens from storage...";
-                        var result = await _tokenStorage.LoadTokensFromStorageAsync();
-                    }
-
-                    if (_tokenStorage.IsTokenRefreshable && !_tokenStorage.IsXTokenValid)
-                    {
-                        Message = "Refreshing tokens...";
-                        await _tokenStorage.AuthenticateXboxLive();
-                        await _tokenStorage.SaveTokensToStorageAsync();
-                        IsBusy = false;
-                        Message = "Authentication successful!";
-                        Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(
-                            async () => await NavigateToConsoleListPage());
-                        return;
-                    }
-                    Message = "Please authenticate...";
-                    IsBusy = false;
-                    // User can chose to authenticate or skip authentication
-                    EnableButtons();
-                });
+                await LoadTokens(acc);
             });
+        }
+
+        async Task LoadTokens(Xamarin.Auth.Account account)
+        {
+            IsBusy = true;
+            DisableButtons();
+
+            Message = "Loading tokens from storage...";
+            bool success = await _tokenStorage.LoadTokensFromStorageAsync();
+
+            if (account != null)
+                await _tokenStorage.UpdateTokensFromAccount(account);
+
+            if (_tokenStorage.IsTokenRefreshable && !_tokenStorage.IsXTokenValid)
+            {
+                Message = "Refreshing tokens...";
+                await _tokenStorage.AuthenticateXboxLive();
+                await _tokenStorage.SaveTokensToStorageAsync();
+                IsBusy = false;
+                Message = "Authentication successful!";
+                Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(
+                    async () => await SkipToConsoleListPage());
+                return;
+            }
+            Message = "Please authenticate...";
+            IsBusy = false;
+            // User can chose to authenticate or skip authentication
+            EnableButtons();
         }
 
         void EnableButtons()
@@ -125,37 +128,33 @@ namespace xnano.ViewModels
             await _navigationService.NavigateAsync(nameof(Views.AuthenticationPage));
         }
 
-        async Task NavigateToConsoleListPage()
+        async Task SkipToConsoleListPage()
         {
-            await _navigationService.NavigateAsync(nameof(Views.ConsoleListPage));
+            await _navigationService.NavigateAsync($"/NavigationPage/{nameof(Views.ConsoleListPage)}");
         }
 
         public override void OnNavigatingTo(INavigationParameters parameters)
         {
-            _freshAccountSet = false;
+            Xamarin.Auth.Account account = null;
             var navMode = parameters.GetNavigationMode();
-            if (navMode != NavigationMode.Back && navMode != NavigationMode.Refresh)
-                return;
-
-            if (parameters.ContainsKey("authenticationSuccess")
-                && parameters.GetValue<bool>("authenticationSuccess"))
+            if (navMode == Prism.Navigation.NavigationMode.Back
+                || navMode == Prism.Navigation.NavigationMode.Refresh)
             {
-                // Authentication succeded, save token to secure storage
-                var account = parameters.GetValue<Xamarin.Auth.Account>("authenticationAccount");
-                _tokenStorage.UpdateTokensFromAccount(account);
-                _freshAccountSet = true;
+                if (parameters.ContainsKey("authenticationSuccess")
+                    && parameters.GetValue<bool>("authenticationSuccess"))
+                {
+                    // Authentication succeded, save token to secure storage
+                    account = parameters.GetValue<Xamarin.Auth.Account>("authenticationAccount");
+                }
+                else if (parameters.ContainsKey("authenticationSuccess"))
+                {
+                    Message = "Authentication failed!\n";
+                    if (parameters.ContainsKey("authenticationMessage"))
+                        Message += parameters.GetValue<string>("authenticationMessage");
+                }
             }
-            else if (parameters.ContainsKey("authenticationSuccess"))
-            {
-                Message = "Authentication failed!\n";
-                if (parameters.ContainsKey("authenticationMessage"))
-                    Message += parameters.GetValue<string>("authenticationMessage");
-            }
-        }
 
-        public override void OnAppearing()
-        {
-            OnAppearingCommand.Execute(null);
+            LoadTokensCommand.Execute(account);
         }
     }
 }
