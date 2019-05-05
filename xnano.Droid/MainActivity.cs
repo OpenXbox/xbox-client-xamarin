@@ -5,6 +5,7 @@ using Android.Net;
 using Android.Net.Wifi;
 using Android.Widget;
 using Android.OS;
+using Android.Views;
 using Rg.Plugins.Popup;
 using Xamarin.Auth.Presenters.XamarinAndroid;
 using Xamarin.Forms;
@@ -20,6 +21,9 @@ namespace xnano.Droid
         private const string WifiTag = "xnano.Droid";
 
         private WifiManager.WifiLock WifiLock { get; set; }
+
+        public event Action<Keycode,KeyEvent,bool> OnButtonEvent;
+        public event Action<MotionEvent> OnMotionEvent;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -79,6 +83,55 @@ namespace xnano.Droid
                 WifiLock.Release();
                 WifiLock = null;
             }
+        }
+
+        public void RegisterGamepadListener(IGamepadEventHandler listener)
+        {
+            OnButtonEvent += listener.OnButtonEvent;
+            OnMotionEvent += listener.OnMotionEvent;
+        }
+
+        public void UnregisterGamepadListener(IGamepadEventHandler listener)
+        {
+            OnButtonEvent -= listener.OnButtonEvent;
+            OnMotionEvent -= listener.OnMotionEvent;
+        }
+
+        /* Catching Gamepad actions */
+        public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
+        {
+            if ((e.Source & InputSourceType.Gamepad) == InputSourceType.Gamepad
+                || (e.Source & InputSourceType.Joystick) == InputSourceType.Joystick)
+            {
+                OnButtonEvent.Invoke(keyCode, e, true);
+                return true;
+            }
+
+            return base.OnKeyDown(keyCode, e);
+        }
+
+        public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
+        {
+            if ((e.Source & InputSourceType.Gamepad) == InputSourceType.Gamepad
+                || (e.Source & InputSourceType.Joystick) == InputSourceType.Joystick)
+            {
+                OnButtonEvent.Invoke(keyCode, e, false);
+                return true;
+            }
+
+            return base.OnKeyUp(keyCode, e);
+        }
+
+        public override bool OnGenericMotionEvent(MotionEvent e)
+        {
+            if ((e.Source & InputSourceType.Gamepad) == InputSourceType.Gamepad
+                || (e.Source & InputSourceType.Joystick) == InputSourceType.Joystick)
+            {
+                OnMotionEvent.Invoke(e);
+                return true;
+            }
+
+            return base.OnGenericMotionEvent(e);
         }
     }
 }

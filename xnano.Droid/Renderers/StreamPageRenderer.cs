@@ -26,7 +26,7 @@ namespace xnano.Droid.Renderers
         private global::Android.Widget.Button _exitButton;
         private global::Android.Views.View _view;
 
-        private Activity _activity;
+        private MainActivity _activity;
         private TextureView _textureView;
 
         private const SystemUiFlags WindowFlags = SystemUiFlags.LayoutStable |
@@ -69,7 +69,7 @@ namespace xnano.Droid.Renderers
 
         void SetupUserInterface()
         {
-            _activity = this.Context as Activity;
+            _activity = this.Context as MainActivity;
             if (_activity != null)
             {
                 _activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)WindowFlags;
@@ -97,6 +97,7 @@ namespace xnano.Droid.Renderers
             _inputHandler = new InputHandler(_viewModel._nanoClient);
             _gamestreamConsumer = new Gamestream.MediaCoreConsumer(_viewModel._nanoClient);
             _textureView.SurfaceTextureListener = _gamestreamConsumer;
+            _activity.RegisterGamepadListener(_inputHandler);
         }
 
         void HideButtons()
@@ -136,32 +137,8 @@ namespace xnano.Droid.Renderers
 
         }
 
-        /* Catching Gamepad actions */
-        public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
-        {
-            if ((e.Source & InputSourceType.Gamepad) != InputSourceType.Gamepad)
-                return base.OnKeyDown(keyCode, e);
-
-            return _inputHandler.OnKeyDown(keyCode, e);
-        }
-
-        public override bool OnKeyUp(Keycode keyCode, KeyEvent e)
-        {
-            if ((e.Source & InputSourceType.Gamepad) != InputSourceType.Gamepad)
-                return base.OnKeyUp(keyCode, e);
-
-            return _inputHandler.OnKeyUp(keyCode, e);
-        }
-
-        public override bool OnGenericMotionEvent(MotionEvent e)
-        {
-            if ((e.Source & InputSourceType.Gamepad) != InputSourceType.Gamepad)
-                return base.OnGenericMotionEvent(e);
-
-            return _inputHandler.OnGenericMotionEvent(e);
-        }
-
         /*
+         * TODO: Reason for a 50% chance of white screen instead of video rendering?       
         public void OnSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
         {
             _textureView.LayoutParameters = new FrameLayout.LayoutParams(width, height);
@@ -185,5 +162,7 @@ namespace xnano.Droid.Renderers
             HideButtons();
             await Task.CompletedTask;
         }
+
+        // TODO: _activity.UnregisterGamepadListener(_inputHandler);
     }
 }

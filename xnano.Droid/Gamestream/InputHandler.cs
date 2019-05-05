@@ -10,7 +10,7 @@ using SmartGlass.Nano.Packets;
 
 namespace xnano.Droid.Gamestream
 {
-    public class InputHandler : IDisposable
+    public class InputHandler : IGamepadEventHandler, IDisposable
     {
         private bool _disposed;
 
@@ -57,19 +57,14 @@ namespace xnano.Droid.Gamestream
             return true;
         }
 
-        public bool OnKeyDown(Keycode keyCode, KeyEvent e)
+        public void OnButtonEvent(Keycode keyCode, KeyEvent e, bool pressed)
         {
-            return HandleButtonPress(keyCode, true);
+            HandleButtonPress(keyCode, pressed);
         }
 
-        public bool OnKeyUp(Keycode keyCode, KeyEvent e)
+        public void OnMotionEvent(MotionEvent e)
         {
-            return HandleButtonPress(keyCode, false);
-        }
-
-        public bool OnGenericMotionEvent(MotionEvent e)
-        {
-            return false;
+            return;
         }
 
         protected virtual void Dispose(bool disposing)
