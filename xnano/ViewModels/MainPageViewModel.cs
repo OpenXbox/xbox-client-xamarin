@@ -62,8 +62,7 @@ namespace xnano.ViewModels
             : base(navigationService)
         {
             _dialogService = dialogService;
-            //_tokenStorage = tokenStorage;
-            _tokenStorage = new TokenStorage(new PlainAccountStorage("tokens.json", FileSystem.AppDataDirectory));
+            _tokenStorage = tokenStorage;
 
             Title = "Welcome";
             Message = "Please authenticate...";
