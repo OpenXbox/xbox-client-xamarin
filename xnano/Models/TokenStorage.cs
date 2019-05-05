@@ -10,35 +10,12 @@ using xnano.Extensions;
 
 namespace xnano.Models
 {
-    public interface ITokenStorage
-    {
-        bool IsTokenRefreshable { get; }
-        bool IsXTokenValid { get; }
-
-        AccessToken AccessToken { get; }
-        RefreshToken RefreshToken { get; }
-        UserToken UserToken { get; }
-        XToken XToken { get; }
-
-        Task<bool> LoadTokensFromStorageAsync();
-        Task<bool> SaveTokensToStorageAsync();
-
-        void UpdateTokensFromAccount(Xamarin.Auth.Account account);
-
-        Task AuthenticateXboxLive();
-    }
-
-    public struct TokenStorage : ITokenStorage
+    public class TokenStorage : ITokenStorage
     {
         const string HardcodedUsername = "XNanoXboxLiveUser";
         private IAccountStorage AccountStorage { get; }
 
-        public bool IsTokenRefreshable => RefreshToken != null
-                                       && RefreshToken.Valid;
-        public bool IsXTokenValid => XToken != null
-                                        && XToken.Valid;
-
-        Xamarin.Auth.Account _account;
+        private Xamarin.Auth.Account _account;
         public Xamarin.Auth.Account Account
         {
             get
@@ -48,10 +25,15 @@ namespace xnano.Models
 
             private set
             {
-                value.Username = HardcodedUsername;
                 _account = value;
+                _account.Username = HardcodedUsername;
             }
         }
+
+        public bool IsTokenRefreshable => RefreshToken != null
+                               && RefreshToken.Valid;
+        public bool IsXTokenValid => XToken != null
+                                        && XToken.Valid;
 
         public AccessToken AccessToken { get; private set; }
         public RefreshToken RefreshToken { get; private set; }
@@ -96,15 +78,17 @@ namespace xnano.Models
             return account;
         }
 
-        public void UpdateTokensFromAccount(Xamarin.Auth.Account account)
+        public Task UpdateTokensFromAccount(Xamarin.Auth.Account account)
         {
             // Set new account
             Account = account;
 
             // Initialize access/refresh tokens
-            var wlResponse = CreateResponseFromAccount(account);
+            var wlResponse = CreateResponseFromAccount(Account);
             AccessToken = new AccessToken(wlResponse);
             RefreshToken = new RefreshToken(wlResponse);
+
+            return Task.CompletedTask;
         }
 
         public async Task<bool> LoadTokensFromStorageAsync()
@@ -117,7 +101,7 @@ namespace xnano.Models
                 throw new InvalidOperationException("Only single account storage supported");
 
             // Set Account loaded from storage
-            UpdateTokensFromAccount(accounts.First());
+            await UpdateTokensFromAccount(accounts[0]);
             return true;
         }
 

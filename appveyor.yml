@@ -24,6 +24,10 @@ install:
 build_script:
   - msbuild %msbuild_cmd%
 
+test_script:
+  - cd xnano.Tests
+  - dotnet test
+
 artifacts:
   - path: '**\*.apk'
     name: apk

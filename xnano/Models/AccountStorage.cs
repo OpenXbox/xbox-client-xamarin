@@ -11,12 +11,6 @@ using Xamarin.Essentials;
 
 namespace xnano.Models
 {
-    public interface IAccountStorage
-    {
-        Task SaveAsync(Account account);
-        Task<List<Account>> FindAccountsForServiceAsync();
-    }
-
     public class PlainAccountStorage : IAccountStorage
     {
         public string FileName { get; }

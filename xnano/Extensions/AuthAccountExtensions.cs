@@ -22,7 +22,7 @@ namespace xnano.Extensions
 
         public static void SetCreationDateTime(this Account account, DateTime dateTime)
         {
-            account.Properties[CreationTimestampProperty] = dateTime.ToUniversalTime().ToString();
+            account.Properties[CreationTimestampProperty] = dateTime.ToUniversalTime().ToString("o");
         }
 
         /* Getters for regular response properties */
