@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using Android.Graphics;
 using Android.Media;
-using Android.Views;
 
 using Xamarin.Forms;
 
@@ -11,92 +8,70 @@ using SmartGlass.Nano;
 using SmartGlass.Nano.Consumer;
 using SmartGlass.Nano.Packets;
 
-using xnano.Services;
-
+[assembly: Dependency(typeof(xnano.Droid.Gamestream.MediaCoreConsumer))]
 namespace xnano.Droid.Gamestream
 {
     public class MediaCoreConsumer
-        : Java.Lang.Object, TextureView.ISurfaceTextureListener, IConsumer, IDisposable
+        : IPlatformStreamConsumer, IDisposable
     {
         private bool _disposed;
 
-        private NanoClient _nanoClient;
-
-        private readonly VideoDecoder _video;
         private readonly VideoAssembler _videoAssembler;
-
-        private readonly AudioDecoder _audio;
         private readonly AudioAssembler _audioAssembler;
-        private readonly SmartGlass.Nano.Packets.AudioFormat _audioFormat;
 
-        private ICommand StartStreamCommand;
-        private ICommand StopStreamCommand;
+        private VideoDecoder _video;
+        private AudioDecoder _audio;
+        private SmartGlass.Nano.Packets.VideoFormat _videoFormat;
+        private SmartGlass.Nano.Packets.AudioFormat _audioFormat;
 
-        public MediaCoreConsumer(NanoClient nano)
+        public MediaCoreConsumer()
         {
-            _nanoClient = nano;
-
-            VideoFormat videoFormat = _nanoClient.Video.AvailableFormats[0];
-            _video = new VideoDecoder(MediaFormat.MimetypeVideoAvc,
-                (int)videoFormat.Width, (int)videoFormat.Height);
             _videoAssembler = new VideoAssembler();
-
-            _audioFormat = _nanoClient.Audio.AvailableFormats[0];
-            _audio = new AudioDecoder(MediaFormat.MimetypeAudioAac,
-                (int)_audioFormat.SampleRate, (int)_audioFormat.Channels);
             _audioAssembler = new AudioAssembler();
-
-            StartStreamCommand = new Command(async ()
-                => await _nanoClient.StartStreamAsync());
-
-            StopStreamCommand = new Command(async ()
-                => await _nanoClient.StopStreamAsync());
-        }
-
-        public void OnSurfaceTextureAvailable(SurfaceTexture surface, int width, int height)
-        {
-            _video.SetSurfaceTexture(surface);
-            _nanoClient.AddConsumer(this);
-            StartStreamCommand.Execute(null);
-        }
-
-        public bool OnSurfaceTextureDestroyed(SurfaceTexture surface)
-        {
-            StopStreamCommand.Execute(null);
-            _nanoClient.RemoveConsumer(this);
-            _video.RemoveSurfaceTexture();
-            StopDecoding();
-
-            return true;
-        }
-
-        public void OnSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height)
-        {
-            StopDecoding();
-            _video.SetSurfaceTexture(surface);
-            StartDecoding();
-        }
-
-        public void OnSurfaceTextureUpdated(SurfaceTexture surface)
-        {
         }
 
         /// <summary>
         /// Start decoder / renderer
         /// </summary>
         /// <returns>The start.</returns>
-        public bool StartDecoding()
+        public void StartDecoding()
         {
-            return (_video.Initialize() && _audio.Initialize());
+            _video.Initialize();
+            _audio.Initialize();
         }
 
         /// <summary>
         /// Stop decoder / renderer
         /// </summary>
         /// <returns>The stop.</returns>
-        public bool StopDecoding()
+        public void StopDecoding()
         {
-            return (_video.StopDecoder() && _audio.StopDecoder());
+            _video.StopDecoder();
+            _audio.StopDecoder();
+        }
+
+        public void InitializeVideo(VideoFormat videoFormat)
+        {
+            _videoFormat = videoFormat;
+            _video = new VideoDecoder(MediaFormat.MimetypeVideoAvc,
+                (int)videoFormat.Width, (int)videoFormat.Height);
+        }
+
+        public void InitializeAudio(SmartGlass.Nano.Packets.AudioFormat audioFormat)
+        {
+            _audioFormat = audioFormat;
+            _audio = new AudioDecoder(MediaFormat.MimetypeAudioAac,
+                (int)_audioFormat.SampleRate, (int)_audioFormat.Channels);
+        }
+
+        public void SetSurfaceTexture(object surfaceObj)
+        {
+            _video.SetSurfaceTexture((SurfaceTexture)surfaceObj);
+        }
+
+        public void RemoveSurfaceTexture(object surfaceObj)
+        {
+            _video.RemoveSurfaceTexture();
         }
 
         public void ConsumeAudioData(object sender, AudioDataEventArgs args)

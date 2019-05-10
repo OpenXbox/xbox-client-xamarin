@@ -9,7 +9,6 @@ namespace xnano.Views
     {
         public StreamPage()
         {
-            // A custom renderer is used to display this page
             InitializeComponent();
         }
     }

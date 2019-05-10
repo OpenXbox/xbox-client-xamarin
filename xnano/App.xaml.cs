@@ -2,6 +2,7 @@
 using Prism.Ioc;
 using Prism.Plugin.Popups;
 
+using Xamarin.Forms;
 using Xamarin.Essentials;
 
 using xnano.Models;
@@ -47,6 +48,8 @@ namespace xnano
              */
             containerRegistry.RegisterInstance<ITokenStorage>(
                 new TokenStorage(new PlainAccountStorage("tokens.json", FileSystem.AppDataDirectory)));
+
+            containerRegistry.RegisterInstance(DependencyService.Get<IPlatformStreamConsumer>());
         }
     }
 

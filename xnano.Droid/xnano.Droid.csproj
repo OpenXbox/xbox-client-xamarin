@@ -53,8 +53,8 @@
     <Compile Include="Gamestream\VideoDecoder.cs" />
     <Compile Include="Gamestream\InputHandler.cs" />
     <Compile Include="Gamestream\MediaCoreConsumer.cs" />
-    <Compile Include="Renderers\StreamPageRenderer.cs" />
     <Compile Include="Gamestream\CircularBuffer.cs" />
+    <Compile Include="StreamViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\icon.png" />
@@ -67,7 +67,6 @@
     <AndroidResource Include="Resources\values\styles.xml" />
     <AndroidResource Include="Resources\drawable\ExitButton.png" />
     <AndroidResource Include="Resources\drawable\RecordButton.png" />
-    <AndroidResource Include="Resources\layout\GamestreamLayout.axml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />

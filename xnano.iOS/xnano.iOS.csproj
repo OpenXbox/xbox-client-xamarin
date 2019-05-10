@@ -95,6 +95,8 @@
     <None Include="Entitlements.plist" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Gamestream\VideoDecoder.cs" />
+    <Compile Include="StreamViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
@@ -159,5 +161,8 @@
       <Project>{660CC30E-B907-4400-A4E4-89ED35A68BED}</Project>
       <Name>xnano</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Gamestream\" />
   </ItemGroup>
 </Project>
