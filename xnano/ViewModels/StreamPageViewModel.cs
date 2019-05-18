@@ -54,8 +54,10 @@ namespace xnano.ViewModels
 
         public override void OnNavigatingTo(INavigationParameters parameters)
         {
+
             if (!parameters.ContainsKey("nano"))
                 throw new InvalidNavigationException("nano client not passed");
+                
 
             _nanoClient = parameters.GetValue<NanoClient>("nano");
             _streamConsumer.InitializeVideo(_nanoClient.VideoFormats[0]);

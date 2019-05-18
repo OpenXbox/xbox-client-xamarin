@@ -13,8 +13,7 @@ namespace xnano.Droid
 {
     [Activity(Label = "xnano.Droid", Icon = "@drawable/icon",
         MainLauncher = true,
-        ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
-        ScreenOrientation = ScreenOrientation.Portrait)]
+        ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         private const string WifiTag = "xnano.Droid";
@@ -38,6 +37,7 @@ namespace xnano.Droid
                 LockRotation(Orientation.Vertical);
             });
 
+            /* Rg Popup, Xamarin Forms, Xamarin Auth */
             Popup.Init(this, savedInstanceState);
 
             Forms.Init(this, savedInstanceState);

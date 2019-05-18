@@ -65,8 +65,15 @@
     <AndroidResource Include="Resources\layout\Tabbar.axml" />
     <AndroidResource Include="Resources\layout\Toolbar.axml" />
     <AndroidResource Include="Resources\values\styles.xml" />
-    <AndroidResource Include="Resources\drawable\ExitButton.png" />
-    <AndroidResource Include="Resources\drawable\RecordButton.png" />
+    <AndroidResource Include="Resources\drawable\GamepadButtonBtn.png" />
+    <AndroidResource Include="Resources\drawable\GamepadDpadDown.png" />
+    <AndroidResource Include="Resources\drawable\GamepadDpadLeft.png" />
+    <AndroidResource Include="Resources\drawable\GamepadDpadRight.png" />
+    <AndroidResource Include="Resources\drawable\GamepadDpadUp.png" />
+    <AndroidResource Include="Resources\drawable\GamepadGuideBtn.png" />
+    <AndroidResource Include="Resources\drawable\GamepadMenuBtn.png" />
+    <AndroidResource Include="Resources\drawable\GamepadViewBtn.png" />
+    <AndroidResource Include="Resources\drawable\GamepadAxis.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />

@@ -6,11 +6,13 @@ using Android.Views;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
-[assembly: ExportRenderer(typeof(xnano.StreamView), typeof(xnano.Droid.StreamViewRenderer))]
+using xnano.Views;
+
+[assembly: ExportRenderer(typeof(PlatformStreamView), typeof(xnano.Droid.StreamViewRenderer))]
 namespace xnano.Droid
 {
     public class StreamViewRenderer
-        : ViewRenderer<xnano.StreamView, TextureView>, TextureView.ISurfaceTextureListener
+        : ViewRenderer<PlatformStreamView, TextureView>, TextureView.ISurfaceTextureListener
     {
         TextureView _textureView;
 
@@ -23,7 +25,7 @@ namespace xnano.Droid
             Element?.ViewEventCommand?.Execute(args);
         }
 
-        protected override void OnElementChanged(ElementChangedEventArgs<xnano.StreamView> e)
+        protected override void OnElementChanged(ElementChangedEventArgs<PlatformStreamView> e)
         {
             base.OnElementChanged(e);
 

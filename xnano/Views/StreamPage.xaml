@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:xnano;assembly=xnano"
+             xmlns:local="clr-namespace:xnano.Views;assembly=xnano"
              xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
                 prism:ViewModelLocator.AutowireViewModel="True"
              x:Class="xnano.Views.StreamPage"
              NavigationPage.HasNavigationBar="false">
     <ContentPage.Content>
-        <StackLayout>
-            <local:StreamView ViewEventCommand="{Binding ViewEventCommand}"
-              HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" />
-        </StackLayout>
+        <AbsoluteLayout>
+            <local:PlatformStreamView
+                ViewEventCommand="{Binding ViewEventCommand}"
+                AbsoluteLayout.LayoutFlags="All"
+                AbsoluteLayout.LayoutBounds="0,0,1,1" />
+            <local:GamepadView
+                AbsoluteLayout.LayoutFlags="All"
+                AbsoluteLayout.LayoutBounds="0,0,1,1" />
+        </AbsoluteLayout>
     </ContentPage.Content>
 </ContentPage>

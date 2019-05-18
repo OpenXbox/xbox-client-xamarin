@@ -50,5 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Extensions\" />
+    <Folder Include="GamepadView\" />
   </ItemGroup>
 </Project>

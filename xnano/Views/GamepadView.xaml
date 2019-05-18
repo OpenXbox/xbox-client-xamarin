@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AbsoluteLayout
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="xnano.Views.GamepadView"
+    BackgroundColor="Transparent">
+    <StackLayout Orientation="Horizontal"
+        AbsoluteLayout.LayoutBounds=".45,.1,.1,.1"
+        AbsoluteLayout.LayoutFlags="All">
+        <ImageButton x:Name="ButtonBack"
+            Source="GamepadViewBtn.png"
+            HorizontalOptions="CenterAndExpand"
+            VerticalOptions="CenterAndExpand" />
+        <ImageButton x:Name="ButtonGuide"
+            Source="GamepadGuideBtn.png"
+            HorizontalOptions="CenterAndExpand"
+            VerticalOptions="CenterAndExpand" />
+        <ImageButton x:Name="ButtonMenu"
+            Source="GamepadMenuBtn.png"
+            HorizontalOptions="CenterAndExpand"
+            VerticalOptions="CenterAndExpand" />
+    </StackLayout>
+    <Grid
+      AbsoluteLayout.LayoutBounds=".95,.75,.2,.3"
+      AbsoluteLayout.LayoutFlags="All">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ImageButton x:Name="ButtonY"
+            Source="GamepadButtonBtn.png"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Grid.Row="0" Grid.Column="1" />
+        <ImageButton x:Name="ButtonX"
+            Source="GamepadButtonBtn.png"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Grid.Row="1" Grid.Column="0" />
+        <ImageButton x:Name="ButtonB"
+            Source="GamepadButtonBtn.png"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Grid.Row="1" Grid.Column="2" />
+        <ImageButton x:Name="ButtonA"
+            Source="GamepadButtonBtn.png"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Grid.Row="2" Grid.Column="1" />
+    </Grid>
+    <Grid
+        AbsoluteLayout.LayoutBounds=".05,.75,.2,.3"
+        AbsoluteLayout.LayoutFlags="All">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ImageButton x:Name="DPadUp"
+            Source="GamepadDpadUp.png"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Grid.Row="0" Grid.Column="1" />
+        <ImageButton x:Name="DPadLeft"
+            Source="GamepadDpadLeft.png"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Grid.Row="1" Grid.Column="0" />
+        <ImageButton x:Name="DPadRight"
+            Source="GamepadDpadRight.png"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Grid.Row="1" Grid.Column="2" />
+        <ImageButton x:Name="DPadDown"
+            Source="GamepadDpadDown.png"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            Grid.Row="2" Grid.Column="1" />
+    </Grid>
+    <ImageButton x:Name="AxisX"
+        Source="GamepadAxis.png"
+        AbsoluteLayout.LayoutBounds=".05,.15,.2,.2"
+        AbsoluteLayout.LayoutFlags="All" />
+    <ImageButton x:Name="AxisY"
+        Source="GamepadAxis.png"
+        AbsoluteLayout.LayoutBounds=".95,.1,.2,.2"
+        AbsoluteLayout.LayoutFlags="All" />
+</AbsoluteLayout>

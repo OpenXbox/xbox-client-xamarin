@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:xnano.Views;assembly=xnano"
+    xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+        prism:ViewModelLocator.AutowireViewModel="True"
+    x:Class="xnano.Views.ControllerTestPage"
+    x:Name="ControllerTest"
+    Title="Hello">
+    <ContentPage.Content>
+        <local:GamepadView
+              HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" />
+    </ContentPage.Content>
+</ContentPage>

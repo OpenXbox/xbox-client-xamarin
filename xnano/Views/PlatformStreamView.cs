@@ -2,14 +2,14 @@
 using System.Windows.Input;
 using Xamarin.Forms;
 
-namespace xnano
+namespace xnano.Views
 {
-    public class StreamView : View
+    public class PlatformStreamView : View
     {
         public static readonly BindableProperty ViewEventCommandProperty = BindableProperty.Create(
             "ViewEventCommand",
             typeof(ICommand),
-            typeof(StreamView));
+            typeof(PlatformStreamView));
 
         public ICommand ViewEventCommand
         {
