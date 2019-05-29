@@ -5,7 +5,6 @@ using Android.Net;
 using Android.Net.Wifi;
 using Android.Widget;
 using Android.OS;
-using Rg.Plugins.Popup;
 using Xamarin.Auth.Presenters.XamarinAndroid;
 using Xamarin.Forms;
 
@@ -37,8 +36,6 @@ namespace xnano.Droid
             {
                 LockRotation(Orientation.Vertical);
             });
-
-            Popup.Init(this, savedInstanceState);
 
             Forms.Init(this, savedInstanceState);
             AuthenticationConfiguration.Init(this, savedInstanceState);

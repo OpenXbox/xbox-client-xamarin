@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Xamarin.Forms;
-using Xamarin.Essentials;
 using Prism.Navigation;
 using Prism.Services;
 
@@ -17,7 +16,7 @@ namespace xnano.ViewModels
 {
     public class ConsoleListPageViewModel : MVVM.ViewModelBase
     {
-        readonly IPageDialogService _dialogService;
+        //readonly IPageDialogService _dialogService;
 
         string _statusMessage;
         public string StatusMessage
@@ -39,16 +38,16 @@ namespace xnano.ViewModels
         public ICommand PowerOnCommand { get; }
         public ICommand ConnectCommand { get; }
 
-        public ConsoleListPageViewModel(INavigationService navigationService,
-                                        IPageDialogService dialogService)
+        public ConsoleListPageViewModel(INavigationService navigationService)//,
+                                        //IPageDialogService dialogService)
             : base(navigationService)
         {
-            _dialogService = dialogService;
+            //_dialogService = dialogService;
 
             Title = "ConsoleList";
             StatusMessage = "Idle";
 
-            Consoles = new SmartGlassConsoles("consoles.json", FileSystem.AppDataDirectory);
+            Consoles = new SmartGlassConsoles("consoles.json", "/");
 
             LoadCachedConsoles = new Command(async () =>
             {
@@ -83,8 +82,11 @@ namespace xnano.ViewModels
 
             PowerOnCommand = new Command<SmartGlass.Device>(async dev =>
             {
+                /*
                 var doPoweron = await _dialogService.DisplayAlertAsync(
                     "Console unavailable", "Do you want to poweron?", "Yes", "No");
+                */
+                bool doPoweron = true;                   
 
                 if (!doPoweron)
                     return;
@@ -133,7 +135,7 @@ namespace xnano.ViewModels
             DeleteItemCommand = new Command<SmartGlass.Device>(DeleteConsoleEntry);
             AddConsoleCommand = new Command(async() => await ShowAddConsolePopup());
 
-            MessagingCenter.Subscribe<EnterIpAddressPopupViewModel, IPAddress>(
+            MessagingCenter.Subscribe<EnterIpAddressPageViewModel, IPAddress>(
                 this, "addConsole", async (sender, address) =>
                 {
                     IsBusy = true;
@@ -168,8 +170,10 @@ namespace xnano.ViewModels
             }
             catch (TimeoutException)
             {
+                /*
                 await _dialogService.DisplayAlertAsync(
                     "Error", $"Console {address} unreachable", "OK");
+                */                   
             }
         }
 
@@ -205,8 +209,10 @@ namespace xnano.ViewModels
             }
             catch (Exception ex)
             {
+                /*
                 await _dialogService.DisplayAlertAsync(
                     "Error", $"Discovery failed, error: {ex}", "OK");
+                */                   
             }
         }
 
@@ -228,12 +234,13 @@ namespace xnano.ViewModels
 
         async Task ShowErrorDisplayAlert(string message)
         {
-            await _dialogService.DisplayAlertAsync("Error", message, "OK");
+            await Task.CompletedTask;
+            //await _dialogService.DisplayAlertAsync("Error", message, "OK");
         }
 
         async Task ShowAddConsolePopup()
         {
-            await _navigationService.NavigateAsync(nameof(Views.EnterIpAddressPopup));
+            await _navigationService.NavigateAsync(nameof(Views.EnterIpAddressPage));
         }
 
         async Task NavigateToStreamPage(INavigationParameters navParams)

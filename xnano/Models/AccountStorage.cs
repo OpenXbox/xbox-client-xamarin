@@ -6,8 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
-using Xamarin.Auth;
 using Xamarin.Essentials;
+using XboxWebApi.Authentication;
 
 namespace xnano.Models
 {
@@ -23,26 +23,25 @@ namespace xnano.Models
             FileName = Path.Combine(baseDir, accountFilename);
         }
 
-        public Task<List<Account>> FindAccountsForServiceAsync()
+        public Task<RefreshToken> FindTokenForServiceAsync()
         {
-            var result = new List<Account>();
             try
             {
                 var json = File.ReadAllText(FileName);
-                var deserialized = JsonConvert.DeserializeObject<Account>(json);
-                result.Add(deserialized);
+                var deserialized = JsonConvert.DeserializeObject<RefreshToken>(json);
+                return Task.FromResult(deserialized);
             }
             catch (Exception)
             {
-                Debug.WriteLine($"No accounts found in PlainAccountStorage");
+                Debug.WriteLine($"No token found in PlainAccountStorage");
             }
 
-            return Task.FromResult(result);
+            return Task.FromResult<RefreshToken>(null);
         }
 
-        public Task SaveAsync(Account account)
+        public Task SaveAsync(RefreshToken token)
         {
-            var json = JsonConvert.SerializeObject(account);
+            var json = JsonConvert.SerializeObject(token);
             File.WriteAllText(FileName, json);
 
             return Task.CompletedTask;
@@ -58,70 +57,31 @@ namespace xnano.Models
             ServiceId = serviceId;
         }
 
-        public async Task<List<Account>> FindAccountsForServiceAsync()
+        public async Task<RefreshToken> FindTokenForServiceAsync()
         {
-            // Get the json for accounts for the service
+            // Get the json for token for the service
             var json = await SecureStorage.GetAsync(ServiceId);
 
             try
             {
-                // Try to return deserialized list of accounts
-                return JsonConvert.DeserializeObject<List<Account>>(json);
+                // Try to return deserialized token
+                return JsonConvert.DeserializeObject<RefreshToken>(json);
             }
             catch (Exception)
             {
                 Debug.WriteLine($"No accounts found for Service Id: {ServiceId}");
             }
 
-            // If this fails, return an empty list
-            return new List<Account>();
+            // If this fails, return null
+            return null;
         }
 
-        public async Task SaveAsync(Account account)
+        public async Task SaveAsync(RefreshToken token)
         {
-            // Find existing accounts for the service
-            var accounts = await FindAccountsForServiceAsync();
+            // Serialize the token to javascript
+            var json = JsonConvert.SerializeObject(token);
 
-            // Remove existing account with Id if exists
-            accounts.RemoveAll(a => a.Username == account.Username);
-
-            // Add account we are saving
-            accounts.Add(account);
-
-            // Serialize all the accounts to javascript
-            var json = JsonConvert.SerializeObject(accounts);
-
-            // Securely save the accounts for the given service
-            await SecureStorage.SetAsync(ServiceId, json);
-        }
-
-        public async Task MigrateAllAccountsAsync(IEnumerable<Account> accountStoreAccounts)
-        {
-            var wasMigrated = await SecureStorage.GetAsync("XamarinAuthAccountStoreMigrated");
-
-            if (String.IsNullOrEmpty(wasMigrated) || wasMigrated == "1")
-                return;
-
-            await SecureStorage.SetAsync("XamarinAuthAccountStoreMigrated", "1");
-
-            // Just in case, look at existing 'new' accounts
-            var accounts = await FindAccountsForServiceAsync();
-
-            foreach (var account in accountStoreAccounts)
-            {
-                // Check if the new storage already has this account
-                // We don't want to overwrite it if it does
-                if (accounts.Any(a => a.Username == account.Username))
-                    continue;
-
-                // Add the account we are migrating
-                accounts.Add(account);
-            }
-
-            // Serialize all the accounts to javascript
-            var json = JsonConvert.SerializeObject(accounts);
-
-            // Securely save the accounts for the given service
+            // Securely save the token for the given service
             await SecureStorage.SetAsync(ServiceId, json);
         }
     }

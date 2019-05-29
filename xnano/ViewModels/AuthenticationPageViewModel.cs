@@ -5,7 +5,6 @@ using Prism.Navigation;
 using Prism.Services;
 using Xamarin.Auth;
 
-using xnano.Models;
 using xnano.Extensions;
 using xnano.Services;
 
@@ -64,7 +63,7 @@ namespace xnano.ViewModels
                 // Set creation timestamp to calculate expiration date later
                 e.Account.SetCreationDateTime(DateTime.Now);
                 // Account contains access and refresh tokens
-                navParams.Add("authenticationAccount", e.Account);
+                navParams.Add("authenticationAccount", e.Account.Properties.ToNameValueCollection());
             }
             else
                 navParams.Add("authenticationMessage", "Authentication not completed!");

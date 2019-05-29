@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Xamarin.Auth;
 
 namespace xnano.Extensions

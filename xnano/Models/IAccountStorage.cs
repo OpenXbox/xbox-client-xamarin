@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Xamarin.Auth;
+using XboxWebApi.Authentication;
 
 namespace xnano.Models
 {
     public interface IAccountStorage
     {
-        Task SaveAsync(Account account);
-        Task<List<Account>> FindAccountsForServiceAsync();
+        Task SaveAsync(RefreshToken account);
+        Task<RefreshToken> FindTokenForServiceAsync();
     }
 }

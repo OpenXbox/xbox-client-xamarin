@@ -12,23 +12,7 @@ namespace xnano.Models
 {
     public class TokenStorage : ITokenStorage
     {
-        const string HardcodedUsername = "XNanoXboxLiveUser";
         private IAccountStorage AccountStorage { get; }
-
-        private Xamarin.Auth.Account _account;
-        public Xamarin.Auth.Account Account
-        {
-            get
-            {
-                return _account;
-            }
-
-            private set
-            {
-                _account = value;
-                _account.Username = HardcodedUsername;
-            }
-        }
 
         public bool IsTokenRefreshable => RefreshToken != null
                                && RefreshToken.Valid;
@@ -44,7 +28,6 @@ namespace xnano.Models
         {
             AccountStorage = accountStorage;
 
-            _account = null;
             AccessToken = null;
             RefreshToken = null;
             UserToken = null;
@@ -78,39 +61,30 @@ namespace xnano.Models
             return account;
         }
 
-        public Task UpdateTokensFromAccount(Xamarin.Auth.Account account)
+        public Task UpdateToken(RefreshToken refreshToken)
         {
-            // Set new account
-            Account = account;
-
-            // Initialize access/refresh tokens
-            var wlResponse = CreateResponseFromAccount(Account);
-            AccessToken = new AccessToken(wlResponse);
-            RefreshToken = new RefreshToken(wlResponse);
-
+            RefreshToken = refreshToken;
             return Task.CompletedTask;
         }
 
-        public async Task<bool> LoadTokensFromStorageAsync()
+        public async Task<bool> LoadTokenFromStorageAsync()
         {
-            var accounts = await AccountStorage.FindAccountsForServiceAsync();
+            var token = await AccountStorage.FindTokenForServiceAsync();
 
-            if (accounts.Count < 1)
+            if (token == null)
                 return false;
-            else if (accounts.Count > 1)
-                throw new InvalidOperationException("Only single account storage supported");
 
             // Set Account loaded from storage
-            await UpdateTokensFromAccount(accounts[0]);
+            await UpdateToken(token);
             return true;
         }
 
-        public async Task<bool> SaveTokensToStorageAsync()
+        public async Task<bool> SaveTokenToStorageAsync()
         {
-            if (Account == null)
+            if (RefreshToken == null)
                 return false;
 
-            await AccountStorage.SaveAsync(Account);
+            await AccountStorage.SaveAsync(RefreshToken);
             return true;
         }
 
@@ -123,9 +97,6 @@ namespace xnano.Models
         async Task RefreshWindowsLiveTokenAsync()
         {
             WindowsLiveResponse wlResponse = await AuthenticationService.RefreshLiveTokenAsync(RefreshToken);
-
-            // Update Account
-            Account = CreateAccountFromResponse(wlResponse);
 
             AccessToken = new AccessToken(wlResponse);
             RefreshToken = new RefreshToken(wlResponse);

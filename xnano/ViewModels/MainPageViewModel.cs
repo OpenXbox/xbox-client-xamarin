@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -10,6 +11,11 @@ using Prism.Navigation;
 using Prism.Services;
 
 using xnano.Models;
+using xnano.Extensions;
+
+using XboxWebApi.Authentication.Model;
+using XboxWebApi.Authentication;
+using System.Collections.Specialized;
 
 namespace xnano.ViewModels
 {
@@ -76,31 +82,31 @@ namespace xnano.ViewModels
                 await NavigateToAuthenticationPage();
             });
 
-            LoadTokensCommand = new Command<Xamarin.Auth.Account>(async acc =>
+            LoadTokensCommand = new Command<WindowsLiveResponse>(async acc =>
             {
                 await LoadTokens(acc);
             });
         }
 
-        async Task LoadTokens(Xamarin.Auth.Account account)
+        async Task LoadTokens(WindowsLiveResponse windowsLiveResponse)
         {
             IsBusy = true;
             DisableButtons();
-
             Message = "Loading tokens from storage...";
-            bool success = await _tokenStorage.LoadTokensFromStorageAsync();
+            bool success = await _tokenStorage.LoadTokenFromStorageAsync();
 
-            if (account != null)
-                await _tokenStorage.UpdateTokensFromAccount(account);
+            if (windowsLiveResponse != null)
+                await _tokenStorage.UpdateToken(new RefreshToken(windowsLiveResponse));
 
             if (_tokenStorage.IsTokenRefreshable && !_tokenStorage.IsXTokenValid)
             {
                 Message = "Refreshing tokens...";
                 await _tokenStorage.AuthenticateXboxLive();
-                await _tokenStorage.SaveTokensToStorageAsync();
+                await _tokenStorage.SaveTokenToStorageAsync();
                 IsBusy = false;
                 Message = "Authentication successful!";
-                Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(
+
+                MainThread.BeginInvokeOnMainThread(
                     async () => await SkipToConsoleListPage());
                 return;
             }
@@ -134,7 +140,7 @@ namespace xnano.ViewModels
 
         public override void OnNavigatingTo(INavigationParameters parameters)
         {
-            Xamarin.Auth.Account account = null;
+            WindowsLiveResponse authResponse = null;
             var navMode = parameters.GetNavigationMode();
             if (navMode == Prism.Navigation.NavigationMode.Back
                 || navMode == Prism.Navigation.NavigationMode.Refresh)
@@ -142,8 +148,9 @@ namespace xnano.ViewModels
                 if (parameters.ContainsKey("authenticationSuccess")
                     && parameters.GetValue<bool>("authenticationSuccess"))
                 {
-                    // Authentication succeded, save token to secure storage
-                    account = parameters.GetValue<Xamarin.Auth.Account>("authenticationAccount");
+                    // We received a token from authentication page
+                    var authParameters = parameters.GetValue<NameValueCollection>("authenticationAccount");
+                    authResponse = new WindowsLiveResponse(authParameters);
                 }
                 else if (parameters.ContainsKey("authenticationSuccess"))
                 {
@@ -153,7 +160,9 @@ namespace xnano.ViewModels
                 }
             }
 
-            LoadTokensCommand.Execute(account);
+            // Load existing tokens, optionally set the fresh one
+            // that was just received
+            LoadTokensCommand.Execute(authResponse);
         }
     }
 }

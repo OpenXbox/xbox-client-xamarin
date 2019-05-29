@@ -1,12 +1,11 @@
 ﻿using System;
 using Xamarin.Forms;
-using Rg.Plugins.Popup.Pages;
 
 namespace xnano.Views
 {
-    public partial class EnterIpAddressPopup : PopupPage
+    public partial class EnterIpAddressPage : ContentPage
     {
-        public EnterIpAddressPopup()
+        public EnterIpAddressPage()
         {
             InitializeComponent();
         }

@@ -8,7 +8,7 @@ using Prism.Navigation;
 
 namespace xnano.ViewModels
 {
-    public class EnterIpAddressPopupViewModel : MVVM.ViewModelBase
+    public class EnterIpAddressPageViewModel : MVVM.ViewModelBase
     {
         string _ipAddressInput;
         public string IpAddressInput
@@ -28,7 +28,7 @@ namespace xnano.ViewModels
         public ICommand AddCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public EnterIpAddressPopupViewModel(INavigationService navigationService)
+        public EnterIpAddressPageViewModel(INavigationService navigationService)
             : base(navigationService)
         {
             Message = "Enter IP address";

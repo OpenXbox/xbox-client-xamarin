@@ -18,10 +18,10 @@ namespace xnano.Models
         UserToken UserToken { get; }
         XToken XToken { get; }
 
-        Task<bool> LoadTokensFromStorageAsync();
-        Task<bool> SaveTokensToStorageAsync();
+        Task<bool> LoadTokenFromStorageAsync();
+        Task<bool> SaveTokenToStorageAsync();
 
-        Task UpdateTokensFromAccount(Xamarin.Auth.Account account);
+        Task UpdateToken(RefreshToken refreshToken);
 
         Task AuthenticateXboxLive();
     }

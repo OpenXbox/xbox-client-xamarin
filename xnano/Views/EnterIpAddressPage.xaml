@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage
+	xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+        prism:ViewModelLocator.AutowireViewModel="True"
+	x:Class="xnano.Views.EnterIpAddressPage"
+    x:Name="EnterIpAddress"
+	Title="{Binding Title}">
+    <ContentPage.Content>
+    	<StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
+    		<Label Text="{Binding Message}" />
+    		<Entry Text="{Binding IpAddressInput}" Placeholder="192.168.0.123" Keyboard="Default" />
+    		<Label Text="{Binding ErrorMessage}" TextColor="Red" />
+    		<Button Text="Add" FontSize="10" Command="{Binding AddCommand}" />
+            <Button Text="Cancel" FontSize="10" Command="{Binding CancelCommand}" />
+    	</StackLayout>
+    </ContentPage.Content>
+</ContentPage>

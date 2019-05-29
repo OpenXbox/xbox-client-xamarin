@@ -1,6 +1,5 @@
 ﻿using Prism;
 using Prism.Ioc;
-using Prism.Plugin.Popups;
 
 using Xamarin.Essentials;
 
@@ -20,7 +19,7 @@ namespace xnano
         {
             InitializeComponent();
 
-            NavigationService.NavigateAsync("NavigationPage/MainPage");
+            NavigationService.NavigateAsync("MainPage");
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -30,10 +29,8 @@ namespace xnano
             containerRegistry.RegisterForNavigation<MainPage>();
             containerRegistry.RegisterForNavigation<AuthenticationPage>();
             containerRegistry.RegisterForNavigation<ConsoleListPage>();
-            containerRegistry.RegisterForNavigation<EnterIpAddressPopup>();
+            containerRegistry.RegisterForNavigation<EnterIpAddressPage>();
             containerRegistry.RegisterForNavigation<StreamPage>();
-
-            containerRegistry.RegisterPopupNavigationService();
 
             // Singletons
             containerRegistry.RegisterSingleton<IAuthenticationService, AuthenticationService>();
@@ -46,7 +43,7 @@ namespace xnano
              * containerRegistry.RegisterInstance<ITokenStorage>(new TokenStorage(new SecureAccountStorage("xnano")));
              */
             containerRegistry.RegisterInstance<ITokenStorage>(
-                new TokenStorage(new PlainAccountStorage("tokens.json", FileSystem.AppDataDirectory)));
+                new TokenStorage(new PlainAccountStorage("tokens.json", "/")));
         }
     }
 
